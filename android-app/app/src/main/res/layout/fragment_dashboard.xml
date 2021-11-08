@@ -51,7 +51,7 @@
                     android:fontFamily="@font/gilroy_extrabold"
                     android:text="Wrist Sensor"
                     android:textColor="@color/text_color"
-                    android:textSize="17dp"
+                    android:textSize="20dp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.15"
@@ -59,7 +59,41 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintVertical_bias="0.15" />
 
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/wristSensorConnCard"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="13dp"
+                    android:visibility="invisible"
+                    app:cardBackgroundColor="@color/test_fail"
+                    app:layout_constraintHorizontal_bias="0.15"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/dbWristSensorTv">
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <TextView
+                            android:id="@+id/wristSensorConnTv"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:fontFamily="@font/gilroy_extrabold"
+                            android:padding="10dp"
+                            android:text="Connected"
+                            android:textColor="@color/white"
+                            android:textSize="17dp"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                </com.google.android.material.card.MaterialCardView>
                 <com.wang.avi.AVLoadingIndicatorView
+                    android:id="@+id/wristSensorLiv"
                     android:layout_width="25dp"
                     android:layout_height="25dp"
                     app:indicatorColor="@color/text_color"
@@ -84,6 +118,194 @@
                     app:layout_constraintTop_toTopOf="parent" />
             </androidx.constraintlayout.widget.ConstraintLayout>
         </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/waistTagCard"
+            android:layout_width="0dp"
+            app:layout_constraintWidth_percent="0.8"
+            android:layout_height="0dp"
+            app:layout_constraintHeight_percent="0.17"
+            app:layout_constraintTop_toBottomOf="@id/wristTagCard"
+            android:layout_marginTop="20dp"
+            app:cardCornerRadius="13px"
+            app:cardBackgroundColor="@color/card_bg"
+            app:strokeColor="#4D4D4D"
+            app:strokeWidth="1px"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/dbWaistSensorTv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/gilroy_extrabold"
+                    android:text="Waist Sensor"
+                    android:textColor="@color/text_color"
+                    android:textSize="20dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.15"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.15" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/waistSensorConnCard"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="13dp"
+                    android:visibility="invisible"
+                    app:cardBackgroundColor="@color/test_fail"
+                    app:layout_constraintHorizontal_bias="0.15"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/dbWaistSensorTv">
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <TextView
+                            android:id="@+id/waistSensorConnTv"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:fontFamily="@font/gilroy_extrabold"
+                            android:padding="10dp"
+                            android:text="Connected"
+                            android:textColor="@color/white"
+                            android:textSize="17dp"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+                <com.wang.avi.AVLoadingIndicatorView
+                    android:id="@+id/waistSensorLiv"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    app:indicatorColor="@color/text_color"
+                    app:indicatorName="LineScaleIndicator"
+                    app:layout_constraintHorizontal_bias="0.15"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/dbWaistSensorTv" />
+
+                <at.markushi.ui.CircleButton
+                    android:id="@+id/refreshWaistSensorBtn"
+                    android:layout_width="50dip"
+                    android:layout_height="50dip"
+                    android:padding="18dp"
+                    android:src="@drawable/ic_refresh"
+                    app:cb_color="@color/primary"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.9"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/serverCard"
+            android:layout_width="0dp"
+            app:layout_constraintWidth_percent="0.8"
+            android:layout_height="0dp"
+            app:layout_constraintHeight_percent="0.17"
+            app:layout_constraintTop_toBottomOf="@id/waistTagCard"
+            android:layout_marginTop="25dp"
+            app:cardCornerRadius="13px"
+            app:cardBackgroundColor="@color/card_bg"
+            app:strokeColor="#4D4D4D"
+            app:strokeWidth="1px"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/dbServerTv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/gilroy_extrabold"
+                    android:text="Cloud Server"
+                    android:textColor="@color/text_color"
+                    android:textSize="20dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.15"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.15" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/serverConnCard"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="13dp"
+                    android:visibility="invisible"
+                    app:cardBackgroundColor="@color/test_fail"
+                    app:layout_constraintHorizontal_bias="0.15"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/dbServerTv">
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <TextView
+                            android:id="@+id/serverConnTv"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:fontFamily="@font/gilroy_extrabold"
+                            android:padding="10dp"
+                            android:text="Connected"
+                            android:textColor="@color/white"
+                            android:textSize="17dp"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+                <com.wang.avi.AVLoadingIndicatorView
+                    android:id="@+id/serverLiv"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    app:indicatorColor="@color/text_color"
+                    app:indicatorName="LineScaleIndicator"
+                    app:layout_constraintHorizontal_bias="0.15"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/dbServerTv" />
+
+                <at.markushi.ui.CircleButton
+                    android:id="@+id/refreshServerConnBtn"
+                    android:layout_width="50dip"
+                    android:layout_height="50dip"
+                    android:padding="18dp"
+                    android:src="@drawable/ic_refresh"
+                    app:cb_color="@color/primary"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.9"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 
