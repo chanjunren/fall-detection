@@ -57,7 +57,7 @@ public class AppRepository {
     private void insertDefaultConfigurationIntoDao() {
         String DEFAULT_GREETING_MSG = "Hi! I'm Temi, how can I help you today?";
         ConfigurationData defaultConfig = new ConfigurationData("WAIST_DAG_DEFAULT_ADD",
-                "WRIST_DAG_DEFAULT_ADD", "92301048");
+                "WRIST_DAG_DEFAULT_ADD", "92301048", "127.0.0.1");
         insertConfigDataIntoDao(defaultConfig);
     }
 }

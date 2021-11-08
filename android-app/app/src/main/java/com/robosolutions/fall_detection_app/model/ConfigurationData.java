@@ -12,13 +12,20 @@ public class ConfigurationData {
     private String waistSensorMacAdd;
     @ColumnInfo(name = "wristSensorMacAdd")
     private String wristSensorMacAdd;
+    @ColumnInfo(name = "serverIp")
+    private String serverIp;
     @ColumnInfo(name = "emergencyContact")
     private String emergencyContact;
 
-    public ConfigurationData(String waistSensorMacAdd, String wristSensorMacAdd, String emergencyContact) {
+    public ConfigurationData(String waistSensorMacAdd, String wristSensorMacAdd, String serverIp, String emergencyContact) {
         this.waistSensorMacAdd = waistSensorMacAdd;
         this.wristSensorMacAdd = wristSensorMacAdd;
+        this.serverIp = serverIp;
         this.emergencyContact = emergencyContact;
+    }
+
+    public String getWaistSensorMacAdd() {
+        return waistSensorMacAdd;
     }
 
     public int getConfigIdx() {
@@ -27,10 +34,6 @@ public class ConfigurationData {
 
     public void setConfigIdx(int configIdx) {
         this.configIdx = configIdx;
-    }
-
-    public String getWaistSensorMacAdd() {
-        return waistSensorMacAdd;
     }
 
     public void setWaistSensorMacAdd(String waistSensorMacAdd) {
@@ -43,6 +46,14 @@ public class ConfigurationData {
 
     public void setWristSensorMacAdd(String wristSensorMacAdd) {
         this.wristSensorMacAdd = wristSensorMacAdd;
+    }
+
+    public String getServerIp() {
+        return serverIp;
+    }
+
+    public void setServerIp(String serverIp) {
+        this.serverIp = serverIp;
     }
 
     public String getEmergencyContact() {
@@ -59,6 +70,7 @@ public class ConfigurationData {
                 "configIdx=" + configIdx +
                 ", waistSensorMacAdd='" + waistSensorMacAdd + '\'' +
                 ", wristSensorMacAdd='" + wristSensorMacAdd + '\'' +
+                ", serverIp='" + serverIp + '\'' +
                 ", emergencyContact='" + emergencyContact + '\'' +
                 '}';
     }
