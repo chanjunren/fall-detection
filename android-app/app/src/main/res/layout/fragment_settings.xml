@@ -1,60 +1,98 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:weightSum="4">
+    android:layout_height="match_parent">
 
-    <TextView
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_margin="10dp"
-        android:layout_weight="1"
-        android:background="@drawable/bg_round_rect"
-        android:gravity="center"
-        android:text="Navigation"
-        android:textColor="#9b92b3"
-        android:textStyle="bold"/>
+        android:layout_height="match_parent">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginEnd="10dp"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        android:layout_marginStart="10dp"
-        android:layout_weight="1"
-        android:background="@drawable/bg_round_rect"
-        android:gravity="center"
-        android:text="Tab"
-        android:textColor="#9b92b3"
-        android:textStyle="bold"/>
+        <TextView
+            android:id="@+id/wristTagLabelTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Wrist Tag Address"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.4" />
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginEnd="10dp"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        android:layout_marginStart="10dp"
-        android:layout_weight="1"
-        android:background="@drawable/bg_round_rect"
-        android:gravity="center"
-        android:text="Bar"
-        android:textColor="#9b92b3"
-        android:textStyle="bold"/>
+        <TextView
+            android:id="@+id/wristTagTv"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/wristTagLabelTv"
+            app:layout_constraintWidth_percent="0.6" />
 
-    <TextView
-        android:id="@+id/txt_vp_item_page"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_margin="10dp"
-        android:layout_weight="1"
-        android:background="@drawable/bg_round_rect"
-        android:gravity="center"
-        android:text="Page"
-        android:textColor="#9b92b3"
-        android:textStyle="bold"/>
+        <TextView
+            android:layout_marginTop="30dp"
+            android:id="@+id/waistTagLabelTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Waist Tag Address"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/wristTagTv" />
 
-</LinearLayout>
+        <TextView
+            android:id="@+id/waistTagTv"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/waistTagLabelTv"
+            app:layout_constraintWidth_percent="0.6" />
+
+        <TextView
+            android:id="@+id/contactLabelTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:text="Emergency Contact Number"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/waistTagTv" />
+
+        <TextView
+            android:id="@+id/contactTv"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/contactLabelTv"
+            app:layout_constraintWidth_percent="0.6" />
+
+        <Button
+            android:id="@+id/setWristTagBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="Set"
+            app:layout_constraintBottom_toBottomOf="@+id/wristTagTv"
+            app:layout_constraintStart_toEndOf="@+id/wristTagTv"
+            app:layout_constraintTop_toTopOf="@+id/wristTagTv" />
+
+        <Button
+            android:id="@+id/setWaistTagBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Set"
+            app:layout_constraintBottom_toBottomOf="@+id/waistTagTv"
+            app:layout_constraintStart_toEndOf="@+id/waistTagTv"
+            app:layout_constraintTop_toTopOf="@+id/waistTagTv" />
+
+        <Button
+            android:id="@+id/setContactBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Set"
+            app:layout_constraintBottom_toBottomOf="@+id/contactTv"
+            app:layout_constraintStart_toEndOf="@+id/contactTv"
+            app:layout_constraintTop_toTopOf="@+id/contactTv"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</FrameLayout>

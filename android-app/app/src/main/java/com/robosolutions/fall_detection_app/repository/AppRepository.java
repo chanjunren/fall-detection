@@ -1,6 +1,7 @@
 package com.robosolutions.fall_detection_app.repository;
 
 import android.app.Application;
+import android.content.res.Configuration;
 import android.util.Log;
 
 import androidx.lifecycle.LiveData;
@@ -18,6 +19,8 @@ public class AppRepository {
     public AppRepository(Application application) {
         FallDetectionDb db = FallDetectionDb.getDatabase(application);
         configurationDataDao = db.configDataDao();
+
+        configurationDataLiveData = configurationDataDao.getConfigurationDataFromDb();
     }
 
     public void insertConfigDataIntoDao(ConfigurationData configurationData) {
@@ -39,5 +42,22 @@ public class AppRepository {
             Log.i(TAG, "Updating: " + configurationData.toString());
             configurationDataDao.updateConfigDataInDb(configurationData);
         });
+    }
+
+    public LiveData<ConfigurationData> getConciergeConfigFromDao() {
+//        if (conciergeConfiguration == null) {
+//            conciergeConfiguration = conciergeConfigDao.getConciergConfigurationFromDb();
+//        }
+        if (configurationDataLiveData.getValue() == null) {
+            insertDefaultConfigurationIntoDao();
+        }
+        return configurationDataLiveData;
+    }
+
+    private void insertDefaultConfigurationIntoDao() {
+        String DEFAULT_GREETING_MSG = "Hi! I'm Temi, how can I help you today?";
+        ConfigurationData defaultConfig = new ConfigurationData("WAIST_DAG_DEFAULT_ADD",
+                "WRIST_DAG_DEFAULT_ADD", "92301048");
+        insertConfigDataIntoDao(defaultConfig);
     }
 }

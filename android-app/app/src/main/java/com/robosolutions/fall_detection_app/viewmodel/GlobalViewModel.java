@@ -4,6 +4,7 @@ import android.app.Application;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.LiveData;
 
 import com.robosolutions.fall_detection_app.model.ConfigurationData;
 import com.robosolutions.fall_detection_app.repository.AppRepository;
@@ -26,4 +27,9 @@ public class GlobalViewModel extends AndroidViewModel {
     public void updateConciergeConfigurationInRepo(ConfigurationData configurationData) {
         appRepository.updateConfigDataInDao(configurationData);
     }
+
+    public LiveData<ConfigurationData> getConfigurationLiveDataFromRepo() {
+        return appRepository.getConciergeConfigFromDao();
+    }
+
 }
