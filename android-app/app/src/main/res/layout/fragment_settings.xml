@@ -6,105 +6,272 @@
     android:layout_height="match_parent">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:background="@color/default_bg"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="@color/default_bg">
 
         <TextView
-            android:id="@+id/wristTagLabelTv"
+            android:id="@+id/sensorsHeader"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Wrist Tag Address"
-            android:textColor="@color/text_color"
-            android:fontFamily="@font/gilroy_light"            app:layout_constraintBottom_toBottomOf="parent"
+            android:fontFamily="@font/gilroy_extrabold"
+            android:text="Sensors"
+            android:textColor="@color/primary_light"
+            android:textSize="20dp"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.05"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.4" />
-
-        <TextView
-            android:id="@+id/wristTagTv"
+            app:layout_constraintVertical_bias="0.13" />
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/sensorsCardContainer"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:textColor="@color/text_color"
-            android:fontFamily="@font/gilroy_light"
+            android:layout_height="0dp"
+            android:layout_marginTop="5dp"
+            android:backgroundTint="@color/card_bg"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_percent="0.2"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/wristTagLabelTv"
-            app:layout_constraintWidth_percent="0.6" />
+            app:layout_constraintTop_toBottomOf="@+id/sensorsHeader"
+            app:layout_constraintWidth_percent="0.95">
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/constraintLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:padding="8dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHeight_percent="0.5"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <TextView
+                        android:id="@+id/wristSensorMacAddTv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="0dp"
+                        android:layout_marginStart="5dp"
+                        android:fontFamily="@font/gilroy_extrabold"
+                        android:text="MAC ADDRESS 1"
+                        android:textColor="@color/white"
+                        android:textSize="15dp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintHeight_percent="0.5"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintVertical_bias="0" />
+
+                    <TextView
+                        android:id="@+id/wristSensorMacAddDescTv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="0dp"
+                        android:layout_marginStart="5dp"
+                        android:fontFamily="@font/gilroy_light"
+                        android:text="Tap to select new Wrist Sensor Tag"
+                        android:textColor="@color/white"
+                        android:textSize="15dp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintHeight_percent="0.5"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintVertical_bias="1" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:padding="8dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHeight_percent="0.5"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/constraintLayout">
+
+                    <TextView
+                        android:id="@+id/waistSensorMacAddTv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="0dp"
+                        android:layout_marginStart="5dp"
+                        android:fontFamily="@font/gilroy_extrabold"
+                        android:text="MAC ADDRESS 2"
+                        android:textColor="@color/white"
+                        android:textSize="15dp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintHeight_percent="0.5"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintVertical_bias="0" />
+
+                    <TextView
+                        android:id="@+id/waistSensorMacAddDescTv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="0dp"
+                        android:layout_marginStart="5dp"
+                        android:fontFamily="@font/gilroy_light"
+                        android:text="Tap to select new Waist Sensor Tag"
+                        android:textColor="@color/white"
+                        android:textSize="15dp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintHeight_percent="0.5"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintVertical_bias="1" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </com.google.android.material.card.MaterialCardView>
 
         <TextView
-            android:layout_marginTop="30dp"
-            android:id="@+id/waistTagLabelTv"
+            android:id="@+id/serverHeader"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Waist Tag Address"
-            android:textColor="@color/text_color"
-            android:fontFamily="@font/gilroy_light"
+            android:fontFamily="@font/gilroy_extrabold"
+            android:text="Server"
+            android:textColor="@color/primary_light"
+            android:textSize="20dp"
+            android:layout_marginTop="20dp"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.05"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/wristTagTv" />
-
-        <TextView
-            android:id="@+id/waistTagTv"
+            app:layout_constraintTop_toBottomOf="@id/sensorsCardContainer"
+            />
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/serverCardContainer"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:textColor="@color/text_color"
-            android:fontFamily="@font/gilroy_light"
+            android:layout_height="0dp"
+            android:layout_marginTop="5dp"
+            android:backgroundTint="@color/card_bg"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_percent="0.1"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/waistTagLabelTv"
-            app:layout_constraintWidth_percent="0.6" />
+            app:layout_constraintTop_toBottomOf="@+id/serverHeader"
+            app:layout_constraintWidth_percent="0.95">
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/setServerAddBtn"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="8dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <TextView
+                        android:id="@+id/serverAddTv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="0dp"
+                        android:layout_marginStart="5dp"
+                        android:fontFamily="@font/gilroy_extrabold"
+                        android:text="SERVER IP ADDRESS"
+                        android:textColor="@color/white"
+                        android:textSize="15dp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintHeight_percent="0.5"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintVertical_bias="0" />
+
+                    <TextView
+                        android:id="@+id/serverAddDescTv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="0dp"
+                        android:layout_marginStart="5dp"
+                        android:fontFamily="@font/gilroy_light"
+                        android:text="Tap to configure server's address"
+                        android:textColor="@color/white"
+                        android:textSize="15dp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintHeight_percent="0.5"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintVertical_bias="1" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </com.google.android.material.card.MaterialCardView>
 
         <TextView
-            android:id="@+id/contactLabelTv"
+            android:id="@+id/otherSettingsHeader"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="30dp"
-            android:text="Emergency Contact Number"
-            android:textColor="@color/text_color"
-            android:fontFamily="@font/gilroy_light"
+            android:fontFamily="@font/gilroy_extrabold"
+            android:text="Other Settings"
+            android:textColor="@color/primary_light"
+            android:textSize="20dp"
+            android:layout_marginTop="20dp"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.05"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/waistTagTv" />
-
-        <TextView
-            android:id="@+id/contactTv"
+            app:layout_constraintTop_toBottomOf="@id/serverCardContainer"
+            />
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/otherCardContainer"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:textColor="@color/text_color"
-            android:fontFamily="@font/gilroy_light"
+            android:layout_height="0dp"
+            android:layout_marginTop="5dp"
+            android:backgroundTint="@color/card_bg"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_percent="0.1"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/contactLabelTv"
-            app:layout_constraintWidth_percent="0.6" />
+            app:layout_constraintTop_toBottomOf="@id/otherSettingsHeader"
+            app:layout_constraintWidth_percent="0.95">
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
 
-        <Button
-            android:id="@+id/setWristTagBtn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:text="Set"
-            app:layout_constraintBottom_toBottomOf="@+id/wristTagTv"
-            app:layout_constraintStart_toEndOf="@+id/wristTagTv"
-            app:layout_constraintTop_toTopOf="@+id/wristTagTv" />
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/setContactBtn"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="8dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
 
-        <Button
-            android:id="@+id/setWaistTagBtn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Set"
-            app:layout_constraintBottom_toBottomOf="@+id/waistTagTv"
-            app:layout_constraintStart_toEndOf="@+id/waistTagTv"
-            app:layout_constraintTop_toTopOf="@+id/waistTagTv" />
+                    <TextView
+                        android:id="@+id/emergencyContactTv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="0dp"
+                        android:layout_marginStart="5dp"
+                        android:fontFamily="@font/gilroy_extrabold"
+                        android:text="EMERGENCY CONTACT NUM"
+                        android:textColor="@color/white"
+                        android:textSize="15dp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintHeight_percent="0.5"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintVertical_bias="0" />
 
-        <Button
-            android:id="@+id/setContactBtn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Set"
-            app:layout_constraintBottom_toBottomOf="@+id/contactTv"
-            app:layout_constraintStart_toEndOf="@+id/contactTv"
-            app:layout_constraintTop_toTopOf="@+id/contactTv"/>
+                    <TextView
+                        android:id="@+id/contactDescTv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="0dp"
+                        android:layout_marginStart="5dp"
+                        android:fontFamily="@font/gilroy_light"
+                        android:text="Tap to configure emergency contact"
+                        android:textColor="@color/white"
+                        android:textSize="15dp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintHeight_percent="0.5"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintVertical_bias="1" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>

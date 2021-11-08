@@ -11,6 +11,7 @@
     <color name="card_bg">#282C31</color>
     <color name="text_color">#CACACA</color>
     <color name="primary">#7F7FD5</color>
+    <color name="primary_light">#CCAFF0</color>
     <color name="test_success">#5ac796</color>
     <color name="test_fail">#dc4454</color>
 </resources>

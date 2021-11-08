@@ -38,9 +38,10 @@ public class SettingsFragment extends Fragment {
     public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         GlobalViewModel viewModel = new ViewModelProvider(this).get(GlobalViewModel.class);
-        TextView wristTagTv = view.findViewById(R.id.wristTagTv);
-        TextView waistTagTv = view.findViewById(R.id.waistTagTv);
-        TextView contactTv = view.findViewById(R.id.contactTv);
+        TextView wristTagTv = view.findViewById(R.id.wristSensorMacAddTv);
+        TextView waistTagTv = view.findViewById(R.id.waistSensorMacAddTv);
+        TextView serverTv = view.findViewById(R.id.serverAddTv);
+        TextView contactTv = view.findViewById(R.id.emergencyContactTv);
         final Observer<ConfigurationData> configObserver = config -> {
             if (config == null) {
                 Log.e(TAG, "ConfigurationData is null");
@@ -48,6 +49,7 @@ public class SettingsFragment extends Fragment {
             }
             wristTagTv.setText(config.getWristSensorMacAdd());
             waistTagTv.setText(config.getWaistSensorMacAdd());
+            serverTv.setText(config.getServerIp());
             contactTv.setText(config.getEmergencyContact());
         };
         viewModel.getConfigurationLiveDataFromRepo().observe(getViewLifecycleOwner(),
