@@ -59,4 +59,11 @@ dependencies {
 
     def navigationtabbar_version = "1.2.5"
     implementation "devlight.io:navigationtabbar:$navigationtabbar_version"
+
+    // Material Card View
+    implementation 'com.google.android.material:material:1.0.0'
+    // Circle button
+    implementation 'com.github.markushi:circlebutton:1.1'
+    // Loading animation
+    implementation 'com.wang.avi:library:2.1.3'
 }
