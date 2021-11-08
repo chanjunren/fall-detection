@@ -4,17 +4,15 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.graphics.Color;
 import android.os.Bundle;
-import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
+import com.robosolutions.fall_detection_app.view.adapter.HomePageAdapter;
 
 import devlight.io.library.ntb.NavigationTabBar;
 
 import java.util.ArrayList;
+
+import static androidx.fragment.app.FragmentPagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT;
 
 public class MainActivity extends AppCompatActivity {
     @Override
@@ -25,34 +23,8 @@ public class MainActivity extends AppCompatActivity {
     }
     private void initUI() {
         final ViewPager viewPager = (ViewPager) findViewById(R.id.vp_vertical_ntb);
-        viewPager.setAdapter(new PagerAdapter() {
-            @Override
-            public int getCount() {
-                return 8;
-            }
-
-            @Override
-            public boolean isViewFromObject(final View view, final Object object) {
-                return view.equals(object);
-            }
-
-            @Override
-            public void destroyItem(final View container, final int position, final Object object) {
-                ((ViewPager) container).removeView((View) object);
-            }
-
-            @Override
-            public Object instantiateItem(final ViewGroup container, final int position) {
-                final View view = LayoutInflater.from(
-                        getBaseContext()).inflate(R.layout.item_vp, null, false);
-
-                final TextView txtPage = (TextView) view.findViewById(R.id.txt_vp_item_page);
-                txtPage.setText(String.format("Page #%d", position));
-
-                container.addView(view);
-                return view;
-            }
-        });
+        viewPager.setAdapter(new HomePageAdapter(getSupportFragmentManager(),
+                BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT));
 
         final String[] colors = getResources().getStringArray(R.array.vertical_ntb);
 
@@ -82,46 +54,46 @@ public class MainActivity extends AppCompatActivity {
                         .title("ic_third")
                         .build()
         );
-        models.add(
-                new NavigationTabBar.Model.Builder(
-                        getResources().getDrawable(R.drawable.ic_fourth),
-                        Color.parseColor(colors[3]))
-                        .selectedIcon(getResources().getDrawable(R.drawable.ic_eighth))
-                        .title("ic_fourth")
-                        .build()
-        );
-        models.add(
-                new NavigationTabBar.Model.Builder(
-                        getResources().getDrawable(R.drawable.ic_fifth),
-                        Color.parseColor(colors[4]))
-                        .selectedIcon(getResources().getDrawable(R.drawable.ic_eighth))
-                        .title("ic_fifth")
-                        .build()
-        );
-        models.add(
-                new NavigationTabBar.Model.Builder(
-                        getResources().getDrawable(R.drawable.ic_sixth),
-                        Color.parseColor(colors[5]))
-                        .selectedIcon(getResources().getDrawable(R.drawable.ic_eighth))
-                        .title("ic_sixth")
-                        .build()
-        );
-        models.add(
-                new NavigationTabBar.Model.Builder(
-                        getResources().getDrawable(R.drawable.ic_seventh),
-                        Color.parseColor(colors[6]))
-                        .selectedIcon(getResources().getDrawable(R.drawable.ic_eighth))
-                        .title("ic_seventh")
-                        .build()
-        );
-        models.add(
-                new NavigationTabBar.Model.Builder(
-                        getResources().getDrawable(R.drawable.ic_eighth),
-                        Color.parseColor(colors[7]))
-                        .selectedIcon(getResources().getDrawable(R.drawable.ic_eighth))
-                        .title("ic_eighth")
-                        .build()
-        );
+//        models.add(
+//                new NavigationTabBar.Model.Builder(
+//                        getResources().getDrawable(R.drawable.ic_fourth),
+//                        Color.parseColor(colors[3]))
+//                        .selectedIcon(getResources().getDrawable(R.drawable.ic_eighth))
+//                        .title("ic_fourth")
+//                        .build()
+//        );
+//        models.add(
+//                new NavigationTabBar.Model.Builder(
+//                        getResources().getDrawable(R.drawable.ic_fifth),
+//                        Color.parseColor(colors[4]))
+//                        .selectedIcon(getResources().getDrawable(R.drawable.ic_eighth))
+//                        .title("ic_fifth")
+//                        .build()
+//        );
+//        models.add(
+//                new NavigationTabBar.Model.Builder(
+//                        getResources().getDrawable(R.drawable.ic_sixth),
+//                        Color.parseColor(colors[5]))
+//                        .selectedIcon(getResources().getDrawable(R.drawable.ic_eighth))
+//                        .title("ic_sixth")
+//                        .build()
+//        );
+//        models.add(
+//                new NavigationTabBar.Model.Builder(
+//                        getResources().getDrawable(R.drawable.ic_seventh),
+//                        Color.parseColor(colors[6]))
+//                        .selectedIcon(getResources().getDrawable(R.drawable.ic_eighth))
+//                        .title("ic_seventh")
+//                        .build()
+//        );
+//        models.add(
+//                new NavigationTabBar.Model.Builder(
+//                        getResources().getDrawable(R.drawable.ic_eighth),
+//                        Color.parseColor(colors[7]))
+//                        .selectedIcon(getResources().getDrawable(R.drawable.ic_eighth))
+//                        .title("ic_eighth")
+//                        .build()
+//        );
 
         navigationTabBar.setModels(models);
         navigationTabBar.setViewPager(viewPager, 4);
