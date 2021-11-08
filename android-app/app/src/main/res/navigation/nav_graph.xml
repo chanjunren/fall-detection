@@ -17,7 +17,7 @@
             app:destination="@id/editContactFragment" />
         <action
             android:id="@+id/action_homeFragment_to_configSensorFragment"
-            app:destination="@id/configSensorFragment" />
+            app:destination="@id/configWaistSensorFragment" />
     </fragment>
     <fragment
         android:id="@+id/editServerFragment"
@@ -38,12 +38,12 @@
             app:destination="@id/homeFragment" />
     </fragment>
     <fragment
-        android:id="@+id/configSensorFragment"
+        android:id="@+id/configWaistSensorFragment"
         android:name="com.cs3237_group_3.fall_detection_app.view.ConfigWaistSensorFragment"
         android:label="fragment_config_sensor"
         tools:layout="@layout/fragment_config_waist_sensor" >
         <action
-            android:id="@+id/action_configSensorFragment_to_homeFragment"
+            android:id="@+id/action_configWaistSensorFragment_to_homeFragment"
             app:destination="@id/homeFragment" />
     </fragment>
 </navigation>

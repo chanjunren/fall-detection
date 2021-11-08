@@ -71,4 +71,7 @@ dependencies {
     def etLatestVersion = "1.0.3"
     implementation "ss.anoop:awesome-textinput-layout:${etLatestVersion}"
 
+    // Pull To Refresh Library
+    implementation 'com.baoyz.pullrefreshlayout:library:1.2.0'
+
 }

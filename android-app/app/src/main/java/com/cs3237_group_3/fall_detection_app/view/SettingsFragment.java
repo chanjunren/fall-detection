@@ -68,6 +68,9 @@ public class SettingsFragment extends Fragment {
         ConstraintLayout configServerAddBtn = view.findViewById(R.id.configServerAddBtn);
         ConstraintLayout configContactBtn = view.findViewById(R.id.configContactBtn);
 
+        configWaistTagBtn.setOnClickListener(v ->
+                navController.navigate(R.id.action_homeFragment_to_configSensorFragment));
+
         configServerAddBtn.setOnClickListener(v ->
                 navController.navigate(R.id.action_homeFragment_to_editServerFragment));
 
