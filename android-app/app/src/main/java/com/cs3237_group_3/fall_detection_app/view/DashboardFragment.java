@@ -1,4 +1,4 @@
-package com.robosolutions.fall_detection_app.view;
+package com.cs3237_group_3.fall_detection_app.view;
 
 import android.os.Bundle;
 
@@ -12,7 +12,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.google.android.material.card.MaterialCardView;
-import com.robosolutions.fall_detection_app.R;
+import com.cs3237_group_3.fall_detection_app.R;
 import com.wang.avi.AVLoadingIndicatorView;
 
 import org.jetbrains.annotations.NotNull;

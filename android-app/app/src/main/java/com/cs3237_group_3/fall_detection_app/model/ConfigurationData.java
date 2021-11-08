@@ -1,4 +1,4 @@
-package com.robosolutions.fall_detection_app.model;
+package com.cs3237_group_3.fall_detection_app.model;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;

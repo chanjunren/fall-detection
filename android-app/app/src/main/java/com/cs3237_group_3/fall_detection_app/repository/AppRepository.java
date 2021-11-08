@@ -1,14 +1,13 @@
-package com.robosolutions.fall_detection_app.repository;
+package com.cs3237_group_3.fall_detection_app.repository;
 
 import android.app.Application;
-import android.content.res.Configuration;
 import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 
-import com.robosolutions.fall_detection_app.db.ConfigurationDataDao;
-import com.robosolutions.fall_detection_app.db.FallDetectionDb;
-import com.robosolutions.fall_detection_app.model.ConfigurationData;
+import com.cs3237_group_3.fall_detection_app.db.ConfigurationDataDao;
+import com.cs3237_group_3.fall_detection_app.db.FallDetectionDb;
+import com.cs3237_group_3.fall_detection_app.model.ConfigurationData;
 
 public class AppRepository {
     private final String TAG = "AppRepository";

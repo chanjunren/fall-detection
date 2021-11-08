@@ -1,4 +1,4 @@
-package com.robosolutions.fall_detection_app.db;
+package com.cs3237_group_3.fall_detection_app.db;
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Delete;
@@ -7,7 +7,7 @@ import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Update;
 
-import com.robosolutions.fall_detection_app.model.ConfigurationData;
+import com.cs3237_group_3.fall_detection_app.model.ConfigurationData;
 
 @Dao
 public interface ConfigurationDataDao {

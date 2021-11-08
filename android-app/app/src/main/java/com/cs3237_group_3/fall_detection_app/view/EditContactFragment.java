@@ -1,4 +1,4 @@
-package com.robosolutions.fall_detection_app.view;
+package com.cs3237_group_3.fall_detection_app.view;
 
 import android.os.Bundle;
 
@@ -16,21 +16,22 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
 
-import com.robosolutions.fall_detection_app.R;
-import com.robosolutions.fall_detection_app.model.ConfigurationData;
-import com.robosolutions.fall_detection_app.viewmodel.GlobalViewModel;
+import com.cs3237_group_3.fall_detection_app.R;
+import com.cs3237_group_3.fall_detection_app.model.ConfigurationData;
+import com.cs3237_group_3.fall_detection_app.viewmodel.GlobalViewModel;
 
 import org.jetbrains.annotations.NotNull;
 
 import at.markushi.ui.CircleButton;
 
-public class EditServerFragment extends Fragment {
-    private final String TAG = "EditServerFragment";
+
+public class EditContactFragment extends Fragment {
+    private final String TAG = "EditContactFragment";
 
     private GlobalViewModel globalViewModel;
     private ConfigurationData currentConfig;
 
-    private EditText serverAddEt;
+    private EditText contactEt;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,7 +41,7 @@ public class EditServerFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_edit_server, container, false);
+        return inflater.inflate(R.layout.fragment_edit_contact, container, false);
     }
 
     @Override
@@ -51,19 +52,19 @@ public class EditServerFragment extends Fragment {
         attachLiveData();
         ImageView backBtn = view.findViewById(R.id.backBtn);
         backBtn.setOnClickListener(v ->
-                navController.navigate(R.id.action_editServerFragment_to_homeFragment));
+                navController.navigate(R.id.action_editContactFragment_to_homeFragment));
 
-        serverAddEt = view.findViewById(R.id.serverAddEt);
+        contactEt = view.findViewById(R.id.emergencyContactEt);
 
-        CircleButton setNewServerAddBtn = view.findViewById(R.id.setNewServerAddBtn);
+        CircleButton setNewServerAddBtn = view.findViewById(R.id.setNewContactNumBtn);
         setNewServerAddBtn.setOnClickListener(v -> {
-            updateServerAddress();
+            updateContactNumberBtn();
             backBtn.callOnClick();
         });
     }
 
-    private void updateServerAddress() {
-        currentConfig.setServerIp(serverAddEt.getText().toString());
+    private void updateContactNumberBtn() {
+        currentConfig.setEmergencyContact(contactEt.getText().toString());
         globalViewModel.updateConciergeConfigurationInRepo(currentConfig);
     }
 

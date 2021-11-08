@@ -1,4 +1,4 @@
-package com.robosolutions.fall_detection_app.view;
+package com.cs3237_group_3.fall_detection_app.view;
 
 import android.graphics.Color;
 import android.os.Bundle;
@@ -12,8 +12,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.robosolutions.fall_detection_app.R;
-import com.robosolutions.fall_detection_app.view.adapter.HomePageAdapter;
+import com.cs3237_group_3.fall_detection_app.R;
+import com.cs3237_group_3.fall_detection_app.view.adapter.HomePageAdapter;
 
 import org.jetbrains.annotations.NotNull;
 

@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/homeFragment"
-        android:name="com.robosolutions.fall_detection_app.view.HomeFragment"
+        android:name="com.cs3237_group_3.fall_detection_app.view.HomeFragment"
         android:label="HomeFragment" >
         <action
             android:id="@+id/action_homeFragment_to_editServerFragment"
@@ -21,7 +21,7 @@
     </fragment>
     <fragment
         android:id="@+id/editServerFragment"
-        android:name="com.robosolutions.fall_detection_app.view.EditServerFragment"
+        android:name="com.cs3237_group_3.fall_detection_app.view.EditServerFragment"
         android:label="fragment_edit_server"
         tools:layout="@layout/fragment_edit_server" >
         <action
@@ -30,7 +30,7 @@
     </fragment>
     <fragment
         android:id="@+id/editContactFragment"
-        android:name="com.robosolutions.fall_detection_app.view.EditContactFragment"
+        android:name="com.cs3237_group_3.fall_detection_app.view.EditContactFragment"
         android:label="fragment_edit_contact"
         tools:layout="@layout/fragment_edit_contact" >
         <action
@@ -39,7 +39,7 @@
     </fragment>
     <fragment
         android:id="@+id/configSensorFragment"
-        android:name="com.robosolutions.fall_detection_app.view.ConfigWaistSensorFragment"
+        android:name="com.cs3237_group_3.fall_detection_app.view.ConfigWaistSensorFragment"
         android:label="fragment_config_sensor"
         tools:layout="@layout/fragment_config_waist_sensor" >
         <action

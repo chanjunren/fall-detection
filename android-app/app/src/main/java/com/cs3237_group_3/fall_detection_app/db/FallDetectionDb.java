@@ -1,4 +1,4 @@
-package com.robosolutions.fall_detection_app.db;
+package com.cs3237_group_3.fall_detection_app.db;
 
 import android.content.Context;
 
@@ -8,7 +8,7 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
-import com.robosolutions.fall_detection_app.model.ConfigurationData;
+import com.cs3237_group_3.fall_detection_app.model.ConfigurationData;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

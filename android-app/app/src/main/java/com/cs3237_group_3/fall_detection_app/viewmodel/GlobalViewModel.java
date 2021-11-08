@@ -1,4 +1,4 @@
-package com.robosolutions.fall_detection_app.viewmodel;
+package com.cs3237_group_3.fall_detection_app.viewmodel;
 
 import android.app.Application;
 
@@ -6,8 +6,8 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
-import com.robosolutions.fall_detection_app.model.ConfigurationData;
-import com.robosolutions.fall_detection_app.repository.AppRepository;
+import com.cs3237_group_3.fall_detection_app.model.ConfigurationData;
+import com.cs3237_group_3.fall_detection_app.repository.AppRepository;
 
 public class GlobalViewModel extends AndroidViewModel {
     private AppRepository appRepository;

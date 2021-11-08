@@ -1,13 +1,12 @@
-package com.robosolutions.fall_detection_app.view.adapter;
+package com.cs3237_group_3.fall_detection_app.view.adapter;
 
-import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
-import com.robosolutions.fall_detection_app.view.AboutFragment;
-import com.robosolutions.fall_detection_app.view.DashboardFragment;
-import com.robosolutions.fall_detection_app.view.SettingsFragment;
+import com.cs3237_group_3.fall_detection_app.view.AboutFragment;
+import com.cs3237_group_3.fall_detection_app.view.DashboardFragment;
+import com.cs3237_group_3.fall_detection_app.view.SettingsFragment;
 
 import org.jetbrains.annotations.NotNull;
 
