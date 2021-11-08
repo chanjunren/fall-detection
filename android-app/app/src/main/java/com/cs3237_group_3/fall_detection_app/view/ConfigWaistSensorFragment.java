@@ -5,6 +5,8 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -12,6 +14,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import com.baoyz.widget.PullRefreshLayout;
 import com.cs3237_group_3.fall_detection_app.R;
@@ -60,6 +63,11 @@ public class ConfigWaistSensorFragment extends Fragment
             Log.i(TAG, "Refresh called");
             pullRefreshLayout.setRefreshing(false);
         });
+        NavController navController = Navigation.findNavController(view);
+
+        ImageView backBtn = view.findViewById(R.id.backBtn);
+        backBtn.setOnClickListener(v ->
+                navController.navigate(R.id.action_configWaistSensorFragment_to_homeFragment));
     }
 
     private void initializeRecylerView() {
