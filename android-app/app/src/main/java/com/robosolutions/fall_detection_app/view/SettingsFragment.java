@@ -70,5 +70,8 @@ public class SettingsFragment extends Fragment {
 
         configServerAddBtn.setOnClickListener(v ->
                 navController.navigate(R.id.action_homeFragment_to_editServerFragment));
+
+        configContactBtn.setOnClickListener(v ->
+                navController.navigate(R.id.action_homeFragment_to_editContactFragment));
     }
 }

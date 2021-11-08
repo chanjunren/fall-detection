@@ -12,6 +12,12 @@
         <action
             android:id="@+id/action_homeFragment_to_editServerFragment"
             app:destination="@id/editServerFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_editContactFragment"
+            app:destination="@id/editContactFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_configSensorFragment"
+            app:destination="@id/configSensorFragment" />
     </fragment>
     <fragment
         android:id="@+id/editServerFragment"
@@ -20,6 +26,24 @@
         tools:layout="@layout/fragment_edit_server" >
         <action
             android:id="@+id/action_editServerFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/editContactFragment"
+        android:name="com.robosolutions.fall_detection_app.view.EditContactFragment"
+        android:label="fragment_edit_contact"
+        tools:layout="@layout/fragment_edit_contact" >
+        <action
+            android:id="@+id/action_editContactFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/configSensorFragment"
+        android:name="com.robosolutions.fall_detection_app.view.ConfigWaistSensorFragment"
+        android:label="fragment_config_sensor"
+        tools:layout="@layout/fragment_config_waist_sensor" >
+        <action
+            android:id="@+id/action_configSensorFragment_to_homeFragment"
             app:destination="@id/homeFragment" />
     </fragment>
 </navigation>
