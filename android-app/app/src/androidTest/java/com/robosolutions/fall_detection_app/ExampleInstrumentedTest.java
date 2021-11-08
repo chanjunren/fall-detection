@@ -1,4 +1,4 @@
-package com.robosolutions.falll_detection_app;
+package com.robosolutions.fall_detection_app;
 
 import android.content.Context;
 
