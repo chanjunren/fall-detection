@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".view.EditServerFragment">
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:background="@color/default_bg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/topBarHeader"
+            android:background="@color/card_bg"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintHeight_percent="0.1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/backBtn"
+                android:layout_width="35dp"
+                android:layout_height="23dp"
+                android:src="@drawable/ic_back"
+                android:layout_marginStart="30dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/gilroy_extrabold"
+                android:text="Server IP Address"
+                android:textColor="@color/white"
+                android:layout_marginStart="25dp"
+                android:textSize="25dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/backBtn"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+        <ss.anoop.awesometextinputlayout.AwesomeTextInputLayout
+            android:id="@+id/awesomeTextInputLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="18dp"
+            android:layout_marginTop="18dp"
+            app:borderColor="@color/primary_light"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/topBarHeader"
+            app:layout_constraintWidth_percent="0.75">
+
+            <EditText
+                android:id="@+id/serverAddEt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/gilroy_light"
+                android:hint="Server IP Address"
+                android:textColorHint="@color/text_color"
+                android:textColor="@color/white" />
+
+        </ss.anoop.awesometextinputlayout.AwesomeTextInputLayout>
+
+        <at.markushi.ui.CircleButton
+            android:id="@+id/setNewServerAddBtn"
+            android:layout_width="50dip"
+            android:layout_height="50dip"
+            android:layout_marginTop="9dp"
+            android:padding="18dp"
+            android:src="@drawable/ic_confirm"
+            app:cb_color="@color/test_success"
+            app:layout_constraintBottom_toBottomOf="@+id/awesomeTextInputLayout"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/awesomeTextInputLayout"
+            app:layout_constraintTop_toTopOf="@+id/awesomeTextInputLayout" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</FrameLayout>

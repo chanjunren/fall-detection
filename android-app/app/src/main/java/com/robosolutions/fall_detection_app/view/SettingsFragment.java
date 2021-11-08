@@ -4,9 +4,12 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,6 +25,9 @@ import org.jetbrains.annotations.NotNull;
 
 public class SettingsFragment extends Fragment {
     private final String TAG = "SettingsFragment";
+
+    private NavController navController;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,6 +44,8 @@ public class SettingsFragment extends Fragment {
     public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         GlobalViewModel viewModel = new ViewModelProvider(this).get(GlobalViewModel.class);
+        navController = Navigation.findNavController(view);
+
         TextView wristTagTv = view.findViewById(R.id.wristSensorMacAddTv);
         TextView waistTagTv = view.findViewById(R.id.waistSensorMacAddTv);
         TextView serverTv = view.findViewById(R.id.serverAddTv);
@@ -55,5 +63,12 @@ public class SettingsFragment extends Fragment {
         viewModel.getConfigurationLiveDataFromRepo().observe(getViewLifecycleOwner(),
                 configObserver);
 
+        ConstraintLayout configWristTagBtn = view.findViewById(R.id.configWristTagBtn);
+        ConstraintLayout configWaistTagBtn = view.findViewById(R.id.configWaistTagBtn);
+        ConstraintLayout configServerAddBtn = view.findViewById(R.id.configServerAddBtn);
+        ConstraintLayout configContactBtn = view.findViewById(R.id.configContactBtn);
+
+        configServerAddBtn.setOnClickListener(v ->
+                navController.navigate(R.id.action_homeFragment_to_editServerFragment));
     }
 }
