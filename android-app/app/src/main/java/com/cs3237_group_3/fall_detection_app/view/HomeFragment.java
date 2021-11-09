@@ -53,25 +53,25 @@ public class HomeFragment extends Fragment {
         final ArrayList<NavigationTabBar.Model> models = new ArrayList<>();
         models.add(
                 new NavigationTabBar.Model.Builder(
-                        getResources().getDrawable(R.drawable.ic_first),
+                        getResources().getDrawable(R.drawable.ic_home),
                         Color.parseColor(colors[0]))
                         .title("ic_first")
-                        .selectedIcon(getResources().getDrawable(R.drawable.ic_first))
+                        .selectedIcon(getResources().getDrawable(R.drawable.ic_home))
                         .build()
         );
         models.add(
                 new NavigationTabBar.Model.Builder(
-                        getResources().getDrawable(R.drawable.ic_second),
+                        getResources().getDrawable(R.drawable.ic_settings),
                         Color.parseColor(colors[1]))
-                        .selectedIcon(getResources().getDrawable(R.drawable.ic_second))
+                        .selectedIcon(getResources().getDrawable(R.drawable.ic_settings))
                         .title("ic_second")
                         .build()
         );
         models.add(
                 new NavigationTabBar.Model.Builder(
-                        getResources().getDrawable(R.drawable.ic_third),
+                        getResources().getDrawable(R.drawable.ic_first),
                         Color.parseColor(colors[2]))
-                        .selectedIcon(getResources().getDrawable(R.drawable.ic_third))
+                        .selectedIcon(getResources().getDrawable(R.drawable.ic_first))
                         .title("ic_third")
                         .build()
         );
