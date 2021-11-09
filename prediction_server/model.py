@@ -44,8 +44,8 @@ class Classifier(ABC):
     def __init__(self, src_path=None):
         self.src_path = src_path
         if src_path and is_hdf5(src_path):
-            print(f'Loading model from {src_path}.')
-            self.model = load_model(path)
+            print(f'Loading [{self.__class__.__name__}]model from [{src_path}].')
+            self.model = load_model(src_path)
         else:
             print(f'Initializing untrained [{self.__class__.__name__}]model.')
             self.model = self.__class__.get_and_compile_fresh_model()
