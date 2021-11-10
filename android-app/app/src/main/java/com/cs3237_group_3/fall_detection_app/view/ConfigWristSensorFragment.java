@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,8 +17,8 @@ import android.widget.ImageView;
 import com.cs3237_group_3.fall_detection_app.R;
 
 import org.jetbrains.annotations.NotNull;
-
 public class ConfigWristSensorFragment extends Fragment {
+    private final String TAG = "ConfigWristSensorFragment";
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,5 +39,6 @@ public class ConfigWristSensorFragment extends Fragment {
         ImageView backBtn = view.findViewById(R.id.backBtn);
         backBtn.setOnClickListener(v ->
                 navController.navigate(R.id.action_configWristSensorFragment_to_homeFragment));
+
     }
 }

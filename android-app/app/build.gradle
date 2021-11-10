@@ -78,10 +78,7 @@ dependencies {
     implementation 'com.baoyz.pullrefreshlayout:library:1.2.0'
 
     // MQTT Library
-    implementation("com.hivemq:hivemq-mqtt-client:1.2.2")
-    implementation(platform("com.hivemq:hivemq-mqtt-client-websocket:1.2.2"))
-    implementation(platform("com.hivemq:hivemq-mqtt-client-proxy:1.2.2"))
-    implementation(platform("com.hivemq:hivemq-mqtt-client-epoll:1.2.2"))
-    implementation("com.hivemq:hivemq-mqtt-client-reactor:1.2.2")
+    implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.1.0'
+    implementation 'org.eclipse.paho:org.eclipse.paho.android.service:1.1.1'
 
 }
