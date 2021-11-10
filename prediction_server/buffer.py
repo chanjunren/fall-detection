@@ -1,21 +1,23 @@
 import logging
-import numpy as np
 import time
-import signal
 import threading
 import multiprocessing
 import queue
-from concurrent.futures import ProcessPoolExecutor as Pool
-from multiprocessing import shared_memory, Array, current_process
-from queue import Queue
 from os import path
+import numpy as np
+from concurrent.futures import ProcessPoolExecutor as Pool
+from multiprocessing import shared_memory, Queue
+from parameters import SAMPLE_RATE, N_FEATURES, TIME_STEPS, STRIDE
 
+FORMAT = '%(asctime)s -- %(levelname)s \t|%(message)s'
 logger = logging.getLogger('SyncBuffer')
 logger.setLevel(logging.INFO)
-FORMAT = '%(asctime)s -- %(processName)s -- %(levelname)s \t %(message)s'
 logging.basicConfig(format=FORMAT)
+
 SHM_LIST='SyncBuffer_state_vars'
 SHM_BUF='SyncBuffer_np_buf'
+
+# TODO: maybe add empty sample to other channel on drift instead of dropping previous sample
 
 class SyncBuffer:
     def __init__(self, length, height, stride, shm_list_name=SHM_LIST, shm_buf_name=SHM_BUF):
@@ -24,6 +26,7 @@ class SyncBuffer:
         self.L = length
         self.H = height
         self.S = stride
+
         self.shm = None
         self.AB = None
         self.buffer = None
@@ -45,7 +48,7 @@ class SyncBuffer:
         self.nB = 0
         self.drift = 0
 
-    def reset(self):
+    def unregister(self):
         self.lock = None
         self.callback = None
 
@@ -126,7 +129,7 @@ class SyncBuffer:
                 self.posA = (self.posA - 1) % self.L
                 self.nA -= 1
                 self.drift+=1
-                logger.warn('drift')
+                logger.warn(('A drift', self.drift))
             else:
                 self.drift=0
             # write to buffer
@@ -148,7 +151,7 @@ class SyncBuffer:
                 self.posB = (self.posB - 1) % self.L
                 self.nB -= 1
                 self.drift+=1   # number of samples drifted ahead
-                logger.warn('drift')
+                logger.warn(('B drift', self.drift))
 
             else:
                 self.drift=0
@@ -167,7 +170,8 @@ class SyncBuffer:
                     self.on_full()
 
 
-def input(sb, A, timeout=None):
+
+def fake_recv_notif(sb, A, timeout=None):
     err = ''
     try:
         sb.register_lock(LOCK)
@@ -185,29 +189,18 @@ def input(sb, A, timeout=None):
     finally:
         if err:
             logger.error('CLIENT_SHUTDOWN:' + err)
-        sb.reset()
+        sb.unregister()
 
-def feedA(i):
+def fake_data(i, A):
     BARRIER.wait()
+    Q = QUEUE_A if A else QUEUE_B
     try:
-        # time.sleep(.001)
+        # time.sleep(.001) # delay
         for _ in range(i):
-            time.sleep(1/40 + np.random.uniform(-3/1000,3/1000,1)[0])
+            time.sleep(1/SAMPLE_RATE + np.random.uniform(-.1/SAMPLE_RATE,.1/SAMPLE_RATE,1)[0])
             logger.debug('write')
-            QUEUE_A.put([1,2,3,4,5,6])
-    except Exception as e:
-        err = e
-    finally:
-        if err:
-            logging.error(err)
-
-def feedB(i):
-    err = ''
-    BARRIER.wait()
-    try:
-        for _ in range(i):
-            time.sleep(1/40 + np.random.uniform(-3/1000,3/1000,1)[0])
-            QUEUE_B.put([1,2,3,4,5,6])
+            # Q.put(np.arange(N_FEATURES//2))
+            Q.put(np.arange(12//2))
     except Exception as e:
         err = e
     finally:
@@ -241,22 +234,26 @@ def initglobals(lock, qA, qB, qO, barr):
     QUEUE_B = qB
     QUEUE_OUT = qO
     BARRIER = barr
-    current_process().name = 'test_drift'
 
-if __name__=="__main__":
+if __name__ == "__main__":
     lock = multiprocessing.Lock()
     qA = multiprocessing.Queue()
     qB = multiprocessing.Queue()
     qO = multiprocessing.Queue()
-    barrier = multiprocessing.Barrier(5)
-    sb = SyncBuffer(60, 6, 20)
+    n_workers = 5
+    barrier = multiprocessing.Barrier(n_workers)
+    # sb = SyncBuffer(TIME_STEPS, N_FEATURES//2, STRIDE)
+    sb = SyncBuffer(60, 12//2, 10)
     sb.open()
-    with Pool(5, initializer=initglobals, initargs=(lock,qA, qB, qO, barrier)) as pool:
-        x = pool.submit(input, sb, True, 1)
-        x = pool.submit(input, sb, False, 1)
-        x = pool.submit(feedA, 210)
-        x = pool.submit(feedB, 210)
-        x = pool.submit(output, 3)
+    with Pool(n_workers, initializer=initglobals, initargs=(lock,qA, qB, qO, barrier)) as pool:
+        # A channel
+        x = pool.submit(fake_recv_notif, sb, True, 1)
+        x = pool.submit(fake_data, 500, True)
+        # B channel
+        x = pool.submit(fake_recv_notif, sb, False, 1)
+        x = pool.submit(fake_data, 500, False)
+        # output
+        x = pool.submit(output, 10)
     sb.print_state()
     logger.info(f'dropped samples A({sb.nA}) and B({sb.nB}) < window size)')
     sb.clear_state()

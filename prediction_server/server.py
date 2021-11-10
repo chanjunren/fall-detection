@@ -1,26 +1,28 @@
-import json
-import numpy as np
 from paho.mqtt import client as mqttclient
-from model import BinaryClassifier
-from multiprocessing import Queue, Barrier
-from concurrent.futures import ProcessPoolExecutor as Pool
-from threading import Thread
-from os import path, getpid
+
+import json
 from struct import pack, unpack
-from parameters import INPUT_SHAPE, MQTT_BROKER_HOST
+
+import numpy as np
+from model import BinaryClassifier
 from h5py import is_hdf5
 
+from concurrent.futures import ProcessPoolExecutor as Pool
+from multiprocessing import Queue, Barrier
+from threading import Thread
+from os import path, getpid
 
-def init_globals(br, jq, pq):
+from parameters import INPUT_SHAPE, MQTT_BROKER_HOST
+
+
+def init_worker(br, jq, pq):
     global barrier, job_q, pub_q
     barrier = br
     job_q = jq
     pub_q = pq
 
-
 def print_when_lifted():
     print('\n>>>>>>>>> Server is ready for prediction <<<<<<<<<<\n')
-
 
 def decode_mqtt_payload(payload):
     len = unpack('I', payload[:4])[0]
@@ -53,7 +55,6 @@ def classification_loop(worker_id, model_fxn, model_path):
             pub_q.put((client_id, request_id, y))
     except Exception as e:
         print(f'\n>>>>>>>>>>>> Process {getpid()} failed! <<<<<<<<<<<<\n', e)
-        raise e
 
 
 class ClassificationServer(mqttclient.Client):
@@ -89,16 +90,14 @@ class ClassificationServer(mqttclient.Client):
         else:
             print("Failed to connect to broker", rc)
 
-
     def start(self):
-        pool = Pool(self.n_workers, initializer=init_globals, initargs=(self.barrier, self.job_q, self.pub_q,))
+        pool = Pool(self.n_workers, initializer=init_worker, initargs=(self.barrier, self.job_q, self.pub_q,))
         for i in range(self.n_workers):
             pool.submit(classification_loop, i, self.model_fxn, self.model_path)
         Thread(target=self.publish_response_loop).start()
         self.connect(MQTT_BROKER_HOST)
         self.loop_start()
         self.barrier.wait()
-
 
 if __name__ == "__main__":
     import sys
