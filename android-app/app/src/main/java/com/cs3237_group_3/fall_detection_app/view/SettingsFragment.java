@@ -67,9 +67,10 @@ public class SettingsFragment extends Fragment {
         ConstraintLayout configWaistTagBtn = view.findViewById(R.id.configWaistTagBtn);
         ConstraintLayout configServerAddBtn = view.findViewById(R.id.configServerAddBtn);
         ConstraintLayout configContactBtn = view.findViewById(R.id.configContactBtn);
-
+        configWristTagBtn.setOnClickListener(v ->
+                navController.navigate(R.id.action_homeFragment_to_configWristSensorFragment));
         configWaistTagBtn.setOnClickListener(v ->
-                navController.navigate(R.id.action_homeFragment_to_configSensorFragment));
+                navController.navigate(R.id.action_homeFragment_to_configWaistSensorFragment));
 
         configServerAddBtn.setOnClickListener(v ->
                 navController.navigate(R.id.action_homeFragment_to_editServerFragment));
