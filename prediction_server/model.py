@@ -3,17 +3,17 @@
 # print("TENSORFLOW_VERSION", __tensorflow_version__)
 # print("NUMPY_VERSION", __numpy_version__)
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 from h5py import is_hdf5
+from abc import ABC, abstractmethod
 from os.path import exists as path_exists
 from tensorflow.keras import layers
 from tensorflow.keras.models import load_model, Sequential
 from tensorflow.keras.callbacks import EarlyStopping
-from abc import ABC, abstractmethod
 from sklearn.metrics import confusion_matrix, plot_confusion_matrix
 from sklearn.preprocessing import LabelBinarizer
-from parameters import INPUT_SHAPE
+from parameters import INPUT_SHAPE, TIME_STEPS, N_FEATURES
 
 class Classifier(ABC):
     @classmethod
@@ -190,7 +190,7 @@ class MultiClassifier(Classifier):
     @classmethod
     def CLASSES(cls):
         # example classes
-        return {0: 'walking', 1: 'falling', 2: 'stationary', -1:'unknown'}
+        return {0: 'walking', 1: 'climbing', 2: 'stationary', -1:'unknown'}
 
     @classmethod
     def N_CLASSES(cls):
@@ -206,6 +206,17 @@ class MultiClassifier(Classifier):
         ])
         model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
         return model
+
+        # DEEPER with LSTM instead of fully connected layer
+        # model = Sequential([
+        #     layers.LSTM(128, return_sequences=True, input_shape=INPUT_SHAPE),
+        #     layers.LSTM(64),
+        #     layers.Dropout(.5),
+        #     layers.Dense(units=32, activation='relu'),
+        #     layers.Dense(units=cls.N_CLASSES(), activation='softmax'),
+        # ])
+        # model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+        # return model
 
     @classmethod
     def decode_prediction(cls, y_pred, threshold=.5, tostring=True):
@@ -257,28 +268,6 @@ if __name__ == "__main__":
                 'val': Fake.y_fake(self.n, n),
             }
 
-    ##  model with more depth (stacking LSTM cells)
-
-    # class MC2(MultiClassifier):
-    #     @classmethod
-    #     def CLASSES(cls):
-    #         return {0: 'walking', 1: 'jumping', 2:'croaking', 3:'flying', -1:'unknown'}
-    #
-    #     @classmethod
-    #     def N_CLASSES(cls):
-    #         return 4
-    #
-    #     @classmethod
-    #     def get_and_compile_fresh_model(cls):
-    #         model = Sequential([
-    #             layers.LSTM(128, return_sequences=True, input_shape=INPUT_SHAPE),
-    #             layers.LSTM(64),
-    #             layers.Dropout(.5),
-    #             layers.Dense(units=32, activation='relu'),
-    #             layers.Dense(units=cls.N_CLASSES(), activation='softmax'),
-    #         ])
-    #         model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-    #         return model
 
     mo = MultiClassifier()
     fake_data_gen = Fake(20)
