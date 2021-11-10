@@ -17,20 +17,20 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 public class MqttClient {
     private final String TAG = "MqttClient";
 
-    final String serverUri = "tcp://127.0.0.1:1883";
+    final String serverUri = "tcp://test.mosquitto.org:1883";
 
     String clientId = "ExampleAndroidClient12312412r3";
     final String subscriptionTopic = "exampleAndroidTopic";
     final String publishTopic = "exampleAndroidPublishTopic";
     final String publishMessage = "Hello World!";
 
-    private MqttAndroidClient client;
+    private final MqttAndroidClient client;
     public MqttClient(Context context) {
         client = new MqttAndroidClient(context, serverUri, clientId);
-        initConnection(serverUri);
+        initConnection(serverUri, context);
     }
 
-    private void initConnection(String serverUri) {
+    private void initConnection(String serverUri, Context context) {
         MqttConnectOptions options = new MqttConnectOptions();
 //        options.setUserName("username");
 //        options.setPassword("username".toCharArray());
@@ -67,7 +67,7 @@ public class MqttClient {
         try {
             //addToHistory("Connecting to " + serverUri);
             Log.i(TAG, "Attempting to connect...");
-            client.connect(mqttConnectOptions, null, new IMqttActionListener() {
+            client.connect(mqttConnectOptions, context, new IMqttActionListener() {
                 @Override
                 public void onSuccess(IMqttToken asyncActionToken) {
                     DisconnectedBufferOptions disconnectedBufferOptions = new DisconnectedBufferOptions();
@@ -136,8 +136,6 @@ public class MqttClient {
 //                e.printStackTrace();
 //            }
 //        }
-
-
     }
 }
 
