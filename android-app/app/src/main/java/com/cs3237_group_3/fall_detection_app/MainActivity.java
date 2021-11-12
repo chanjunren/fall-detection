@@ -3,28 +3,39 @@ package com.cs3237_group_3.fall_detection_app;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.cs3237_group_3.fall_detection_app.gateway.MqttClient;
-
-import static androidx.core.app.ActivityCompat.startActivityForResult;
-
 public class MainActivity extends AppCompatActivity {
     private final String TAG = "MainActivity";
+    private final static int REQUEST_ENABLE_LOCATION = 7;
     private final static int REQUEST_ENABLE_BT = 17;
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 //        MqttClient mqttClient = new MqttClient(getApplicationContext());
-        requestForBluetooth();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        requestBlePermission();
+        requestLocationPermission();
+    }
+    private void requestLocationPermission() {
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[] {Manifest.permission.ACCESS_FINE_LOCATION},
+                    REQUEST_ENABLE_LOCATION);
+        }
+    }
 
-    private void requestForBluetooth() {
+    private void requestBlePermission() {
 //        Optionally, your app can also listen for the ACTION_STATE_CHANGED broadcast intent,
 //        which the system broadcasts whenever the Bluetooth state changes.
 //        This broadcast contains the extra fields EXTRA_STATE and EXTRA_PREVIOUS_STATE,
@@ -52,7 +63,12 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == REQUEST_ENABLE_BT) {
             Log.i(TAG, "REQUEST_ENABLE_BT result code:  " + resultCode);
             if (resultCode != RESULT_OK) {
-                requestForBluetooth();
+                requestBlePermission();
+            }
+        } else if (requestCode == REQUEST_ENABLE_LOCATION) {
+            Log.i(TAG, "ACCESS_FINE_LOCATION result code:  " + resultCode);
+            if (resultCode != RESULT_OK) {
+                requestLocationPermission();
             }
         }
     }
