@@ -1,16 +1,26 @@
 package com.cs3237_group_3.fall_detection_app.view;
 
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGattCallback;
+import android.bluetooth.BluetoothManager;
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.cs3237_group_3.fall_detection_app.gateway.BleManager;
+import com.cs3237_group_3.fall_detection_app.model.ConfigurationData;
+import com.cs3237_group_3.fall_detection_app.viewmodel.GlobalViewModel;
 import com.google.android.material.card.MaterialCardView;
 import com.cs3237_group_3.fall_detection_app.R;
 import com.wang.avi.AVLoadingIndicatorView;
@@ -19,8 +29,13 @@ import org.jetbrains.annotations.NotNull;
 
 import at.markushi.ui.CircleButton;
 
-public class DashboardFragment extends Fragment implements View.OnClickListener {
+public class DashboardFragment extends Fragment
+        implements View.OnClickListener {
     private final String TAG = "DashboardFragment";
+    private GlobalViewModel viewModel;
+    private BleManager bleManager;
+    private ConfigurationData configurationData;
+
     private AVLoadingIndicatorView wristSensorLiv, waistSensorLiv, serverLiv;
     private MaterialCardView wristSensorConnCard, waistSensorConnCard, serverConnCard;
     private TextView wristSensorConnTv, waistSensorConnTv, serverConnTv;
@@ -40,6 +55,13 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
     @Override
     public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        viewModel = new ViewModelProvider(this).get(GlobalViewModel.class);
+        viewModel.initBleServices(
+                (BluetoothManager) getActivity().getSystemService(Context.BLUETOOTH_SERVICE),
+                getContext());
+        bleManager = viewModel.getBleManager();
+        initObservers();
+
         wristSensorLiv = view.findViewById(R.id.wristSensorLiv);
         wristSensorConnCard = view.findViewById(R.id.wristSensorConnCard);
         wristSensorConnTv = view.findViewById(R.id.wristSensorConnTv);
@@ -57,6 +79,39 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
         serverConnTv = view.findViewById(R.id.serverConnTv);
         CircleButton refreshServerConnBtn = view.findViewById(R.id.refreshServerConnBtn);
         refreshServerConnBtn.setOnClickListener(this);
+
+
+    }
+
+    private void initObservers() {
+        final Observer<ConfigurationData> configObserver = config -> {
+            if (config == null) {
+                Log.e(TAG, "ConfigurationData is null");
+                return;
+            }
+            bleManager.connectToSensorTags(config.getWristSensorMacAdd(), config.getWaistSensorMacAdd());
+        };
+        viewModel.getConfigurationLiveDataFromRepo().observe(getViewLifecycleOwner(),
+                configObserver);
+        final Observer<Boolean> wristTagConnStatusObserver = wristTagConnRes -> {
+            if (wristTagConnRes == null) {
+                Log.e(TAG, "connRes is null");
+                return;
+            }
+            setConnRes(wristSensorConnCard, wristSensorConnTv, wristTagConnRes);
+        };
+        bleManager.getWristConnStatusLiveData().observe(getViewLifecycleOwner(),
+                wristTagConnStatusObserver);
+
+        final Observer<Boolean> waistTagConnStatusObserver = waistTagConnRes -> {
+            if (waistTagConnRes == null) {
+                Log.e(TAG, "connRes is null");
+                return;
+            }
+            setConnRes(waistSensorConnCard, waistSensorConnTv, waistTagConnRes);
+        };
+        bleManager.getWaistConnStatusLiveData().observe(getViewLifecycleOwner(),
+                waistTagConnStatusObserver);
     }
 
     private void setConnRes(MaterialCardView card, TextView tv, boolean connSuccess) {
@@ -75,13 +130,15 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
         // For refresh buttons
         if (v.getId() == R.id.refreshWristSensorBtn) {
             wristSensorLiv.hide();
-            setConnRes(wristSensorConnCard, wristSensorConnTv, true);
+            bleManager.connectToWristSensorTag();
         } else if (v.getId() == R.id.refreshWaistSensorBtn) {
             waistSensorLiv.hide();
-            setConnRes(waistSensorConnCard, waistSensorConnTv, true);
+            bleManager.connectToWaistSensorTag();
         } else if (v.getId() == R.id.refreshServerConnBtn) {
             serverLiv.hide();
             setConnRes(serverConnCard, serverConnTv, false);
         }
     }
+
+
 }

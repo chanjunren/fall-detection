@@ -2,6 +2,8 @@ package com.cs3237_group_3.fall_detection_app;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
@@ -12,17 +14,32 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.cs3237_group_3.fall_detection_app.gateway.BleManager;
+import com.cs3237_group_3.fall_detection_app.model.ConfigurationData;
+import com.cs3237_group_3.fall_detection_app.viewmodel.GlobalViewModel;
 
 public class MainActivity extends AppCompatActivity {
     private final String TAG = "MainActivity";
     private final static int REQUEST_ENABLE_LOCATION = 7;
     private final static int REQUEST_ENABLE_BT = 17;
+
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 //        MqttClient mqttClient = new MqttClient(getApplicationContext());
+        GlobalViewModel globalViewModel = new ViewModelProvider(this).get(GlobalViewModel.class);
+        globalViewModel.initBleServices(
+                (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE),
+                getApplicationContext());
+        final Observer<ConfigurationData> configObserver = config -> {
+            if (config == null) {
+                Log.e(TAG, "ConfigurationData is null");
+                return;
+            }
+            globalViewModel.getBleManager().connectToSensorTags(config.getWristSensorMacAdd(),
+                    config.getWaistSensorMacAdd());
+        };
+        globalViewModel.getConfigurationLiveDataFromRepo().observe(this, configObserver);
     }
 
     @Override
