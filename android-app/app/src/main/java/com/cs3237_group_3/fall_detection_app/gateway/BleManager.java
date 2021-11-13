@@ -25,15 +25,6 @@ public class BleManager {
         this.scanCallback = scanCallback;
         this.isScanning = false;
     }
-    // ScanResults || ScanCallback
-        // getDevice() => handle used to connect to BLE device
-        // getName() => name of device (?) not really necessary
-        // getRssi() => connection strength
-
-    // ScanSettings
-        // scan mode: SCAN_MODE_BALANCED
-        // callback type: CALLBACK_TYPE_ALL_MATCHES
-        // threshold: MATCH_MODE_STICKY
 
     // Notable errors
         // 1. scanning too frequently => scanning cannot exceed 30 seconds
@@ -47,8 +38,11 @@ public class BleManager {
         ).build();
 
         ScanSettings scanSettings = new ScanSettings.Builder()
-                .setScanMode(ScanSettings.SCAN_MODE_BALANCED)
+                // Scanning for a short period of time to find specific device
+                .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+                // Single callback for EACH device
                 .setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
+                // Filtering out devices that are too far away
                 .setMatchMode(ScanSettings.MATCH_MODE_STICKY)
                 .build();
         Log.i(TAG, "Starting scan...");
@@ -57,6 +51,7 @@ public class BleManager {
     }
 
     public void stopBleScan() {
+        Log.i(TAG, "Stopping scan...");
         bleScanner.stopScan(scanCallback);
         isScanning = false;
     }

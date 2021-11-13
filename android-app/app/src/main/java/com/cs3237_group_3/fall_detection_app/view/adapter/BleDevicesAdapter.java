@@ -1,5 +1,6 @@
 package com.cs3237_group_3.fall_detection_app.view.adapter;
 
+import android.bluetooth.BluetoothDevice;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,9 +18,9 @@ public class BleDevicesAdapter extends RecyclerView.Adapter<BleDevicesAdapter.Bl
     private final String TAG = "BleAdapter";
 
     private OnBleDeviceClickedListener onBleDeviceClickedListener;
-    private ArrayList<String> bleDevices;
+    private ArrayList<BluetoothDevice> bleDevices;
 
-    public BleDevicesAdapter(ArrayList<String> bleDevices,
+    public BleDevicesAdapter(ArrayList<BluetoothDevice> bleDevices,
                              OnBleDeviceClickedListener onBleDeviceClickedListener) {
         this.onBleDeviceClickedListener = onBleDeviceClickedListener;
         this.bleDevices = bleDevices;
@@ -38,24 +39,6 @@ public class BleDevicesAdapter extends RecyclerView.Adapter<BleDevicesAdapter.Bl
         holder.setText(position);
         holder.itemView.setOnClickListener(v ->
                 holder.onBleDeviceClickedListener.onBleDeviceSelected(position));
-//        holder.dropDownBtn.setOnClickListener(v -> {
-//            boolean show = toggleLayout(!expandedArrHelper[position], v, holder.expandLayout);
-//            expandedArrHelper[position] = show;
-//        });
-//
-//        holder.deleteRouteBtn.setOnClickListener(v -> {
-//            onRouteClickListener.onRouteDeleteClick(position);
-//            boolean show = toggleLayout(!expandedArrHelper[position], v, holder.expandLayout);
-//            expandedArrHelper[position] = show;
-//        });
-//
-//        holder.editRouteBtn.setOnClickListener(v -> {
-//            onRouteClickListener.onRouteEditClick(position);
-//        });
-//
-//        holder.executeRouteBtn.setOnClickListener(v -> {
-//            onRouteClickListener.onRouteExecuteClick(position);
-//        });
     }
 
     @Override
@@ -64,16 +47,18 @@ public class BleDevicesAdapter extends RecyclerView.Adapter<BleDevicesAdapter.Bl
     }
 
     public class BleDeviceViewHolder extends RecyclerView.ViewHolder {
-        TextView bleDeviceTv;
+        TextView bleDeviceNameTv, bleDeviceMacAddTv;
         OnBleDeviceClickedListener onBleDeviceClickedListener;
         public BleDeviceViewHolder(@NonNull View itemView, OnBleDeviceClickedListener onBleDeviceClickedListener) {
             super(itemView);
-            bleDeviceTv = itemView.findViewById(R.id.bleDeviceTv);
+            bleDeviceNameTv = itemView.findViewById(R.id.bleDeviceNameTv);
+            bleDeviceMacAddTv = itemView.findViewById(R.id.bleDeviceMacAddTv);
             this.onBleDeviceClickedListener = onBleDeviceClickedListener;
         }
 
         void setText(int position) {
-            bleDeviceTv.setText(bleDevices.get(position));
+            bleDeviceNameTv.setText(bleDevices.get(position).getName());
+            bleDeviceMacAddTv.setText(bleDevices.get(position).getAddress());
         }
     }
 

@@ -1,5 +1,6 @@
 package com.cs3237_group_3.fall_detection_app.view;
 
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
@@ -29,6 +30,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 
 public class ConfigWaistSensorFragment extends Fragment
@@ -37,8 +39,9 @@ public class ConfigWaistSensorFragment extends Fragment
     private BleManager bleManager;
     private ScanCallback scanCallback;
     private RecyclerView bleDevicesRv;
+    private BleDevicesAdapter bleDevicesAdapter;
     private PullRefreshLayout pullRefreshLayout;
-    private ArrayList<String> availableBleDevices;
+    private ArrayList<BluetoothDevice> availableBleDevices;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -87,7 +90,7 @@ public class ConfigWaistSensorFragment extends Fragment
     }
 
     private void initializeRecylerView() {
-        BleDevicesAdapter bleDevicesAdapter = new BleDevicesAdapter(availableBleDevices, this);
+        bleDevicesAdapter = new BleDevicesAdapter(availableBleDevices, this);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         bleDevicesRv.setAdapter(bleDevicesAdapter);
         bleDevicesRv.setLayoutManager(mLayoutManager);
@@ -98,17 +101,27 @@ public class ConfigWaistSensorFragment extends Fragment
             @Override
             public void onScanResult(int callbackType, ScanResult result) {
                 super.onScanResult(callbackType, result);
-                Log.i(TAG, String.format("Detected: %s | %s\n",
-                        result.getDevice().getAddress(), result.getDevice().getName()));
+                Optional<BluetoothDevice> query = availableBleDevices.stream()
+                        .filter(device -> device.getAddress().equals(result.getDevice().getAddress()))
+                        .findFirst();
+
+                if (query.isPresent()) {
+                    // Query present
+//                    int queryIndex = availableBleDevices.indexOf(query.get());
+//                    Log.i(TAG, "Query Index " + queryIndex);
+//                    availableBleDevices.set(queryIndex, result.getDevice());
+//                    bleDevicesAdapter.notifyItemChanged(queryIndex);
+                } else {
+//                    Log.i(TAG, String.format("Found: %s | %s\n",
+//                            result.getDevice().getAddress(), result.getDevice().getName()));
+                    availableBleDevices.add(result.getDevice());
+                    bleDevicesAdapter.notifyItemInserted(availableBleDevices.size() - 1);
+                }
             }
 
             @Override
             public void onBatchScanResults(List<ScanResult> results) {
                 super.onBatchScanResults(results);
-                for (ScanResult result: results) {
-                    Log.i(TAG, String.format("Detected: %s | %s\n",
-                            result.getDevice().getAddress(), result.getDevice().getName()));
-                }
             }
 
             @Override
