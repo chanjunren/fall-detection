@@ -10,6 +10,8 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -24,7 +26,9 @@ import android.widget.ImageView;
 import com.baoyz.widget.PullRefreshLayout;
 import com.cs3237_group_3.fall_detection_app.R;
 import com.cs3237_group_3.fall_detection_app.gateway.BleManager;
+import com.cs3237_group_3.fall_detection_app.model.ConfigurationData;
 import com.cs3237_group_3.fall_detection_app.view.adapter.BleDevicesAdapter;
+import com.cs3237_group_3.fall_detection_app.viewmodel.GlobalViewModel;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -36,8 +40,13 @@ import java.util.Optional;
 public class ConfigWaistSensorFragment extends Fragment
         implements BleDevicesAdapter.OnBleDeviceClickedListener {
     private final String TAG = "ConfigWaistSensorFragment";
+    private GlobalViewModel globalViewModel;
+    private ConfigurationData configurationData;
+
     private BleManager bleManager;
     private ScanCallback scanCallback;
+
+    ImageView backBtn;
     private RecyclerView bleDevicesRv;
     private BleDevicesAdapter bleDevicesAdapter;
     private PullRefreshLayout pullRefreshLayout;
@@ -59,6 +68,17 @@ public class ConfigWaistSensorFragment extends Fragment
     @Override
     public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        globalViewModel = new ViewModelProvider(this).get(GlobalViewModel.class);
+        final Observer<ConfigurationData> configObserver = config -> {
+            if (config == null) {
+                Log.e(TAG, "ConfigurationData is null");
+                return;
+            }
+            this.configurationData = config;
+        };
+        globalViewModel.getConfigurationLiveDataFromRepo().observe(getViewLifecycleOwner(),
+                configObserver);
+
         BluetoothManager bluetoothManager = (BluetoothManager)
                 getActivity().getSystemService((Context.BLUETOOTH_SERVICE));
         initBleCallBack();
@@ -76,7 +96,7 @@ public class ConfigWaistSensorFragment extends Fragment
         });
         NavController navController = Navigation.findNavController(view);
 
-        ImageView backBtn = view.findViewById(R.id.backBtn);
+        backBtn = view.findViewById(R.id.backBtn);
         backBtn.setOnClickListener(v ->
                 navController.navigate(R.id.action_configWaistSensorFragment_to_homeFragment));
 
@@ -135,5 +155,8 @@ public class ConfigWaistSensorFragment extends Fragment
     @Override
     public void onBleDeviceSelected(int position) {
         Log.i(TAG, availableBleDevices.get(position) + " selected");
+        configurationData.setWaistSensorMacAdd(availableBleDevices.get(position).getAddress());
+        globalViewModel.updateConciergeConfigurationInRepo(configurationData);
+        backBtn.callOnClick();
     }
 }
