@@ -5,7 +5,7 @@ from paho.mqtt.client import Client
 from queue import Empty as QueueEmpty
 from concurrent.futures import ThreadPoolExecutor as PoolExecutor
 from array import array
-
+from parameters import MQTT_BROKER_HOST, MQTT_BROKER_PORT, TIME_STEPS, STRIDE, N_FEATURES
 
 class RollingWindow:
     def __init__(self, length:int, stride:int, size:int, type:str, callback):
@@ -31,12 +31,13 @@ class RollingWindow:
 
 
 class MqttMixer(Client):
-    def __init__(self, n_channels, name, hostname='localhost', timeout=None, align=False):
+    def __init__(self, n_channels, name, hostname=MQTT_BROKER_HOST, port=MQTT_BROKER_PORT, timeout=None, align=False):
         super().__init__()
         self.n_channels = n_channels
         self.input_topics = [f'mixer/{name}/in/{n}' for n in range(n_channels)]
         self.output_topic = f'mixer/{name}/out'
         self.hostname = hostname
+        self.port = port
         # align should be set to TRUE if incoming data is not assured to be in sync
         self.align = align
         self.timeout = timeout
@@ -108,7 +109,7 @@ class MqttMixer(Client):
         with PoolExecutor(2) as executor:
             executor.submit(self.mix_input_loop)
             executor.submit(self.on_output_loop)
-            self.connect('localhost')
+            self.connect(self.hostname, self.port)
             self.loop_start()
             return fut
 
@@ -117,14 +118,12 @@ class MqttMixer(Client):
 if __name__ == "__main__":
     import sys
 
-    # argv1 name
-    # argv2 # of channels
     def callb(window):
-        a = np.frombuffer(window.tobytes(), dtype=np.float64).reshape(-1, 12)
+        a = np.frombuffer(window.tobytes(), dtype=np.float64).reshape(-1, N_FEATURES)
         print(a.shape)
 
     mixer = MqttMixer(int(sys.argv[2]), sys.argv[1], align=True, timeout=1/20)
-    window = RollingWindow(60, 10, 12, 'd', callb)
+    window = RollingWindow(TIME_STEPS, STRIDE, N_FEATURES, 'd', callb)
 
     def on_output(output):
         a = array('d')
