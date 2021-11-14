@@ -2,20 +2,21 @@ package com.cs3237_group_3.fall_detection_app;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.Manifest;
+import android.accessibilityservice.AccessibilityService;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.text.TextUtils;
 import android.util.Log;
 
-import com.cs3237_group_3.fall_detection_app.gateway.MqttClient;
-import com.cs3237_group_3.fall_detection_app.model.ConfigurationData;
+import com.cs3237_group_3.fall_detection_app.util.WhatsappAccessibilityService;
 import com.cs3237_group_3.fall_detection_app.viewmodel.GlobalViewModel;
 
 public class MainActivity extends AppCompatActivity {
@@ -27,19 +28,20 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        GlobalViewModel viewModel = new ViewModelProvider(this).get(GlobalViewModel.class);
-        //        globalViewModel.initBleServices(
-//                (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE),
-//                getApplicationContext());
-//        final Observer<ConfigurationData> configObserver = config -> {
-//            if (config == null) {
-//                Log.e(TAG, "ConfigurationData is null");
-//                return;
-//            }
-//            globalViewModel.getBleManager().connectToSensorTags(config.getWristSensorMacAdd(),
-//                    config.getWaistSensorMacAdd());
-//        };
-//        globalViewModel.getConfigurationLiveDataFromRepo().observe(this, configObserver);
+        sendwts();
+    }
+
+    protected void sendwts(){
+        String smsNumber = "6596262301"; // E164 format without '+' sign
+        Intent sendIntent = new Intent(Intent.ACTION_SEND);
+        //  Intent sendIntent = new Intent(Intent.ACTION_SENDTO);
+        sendIntent.setType("text/plain");
+        sendIntent.putExtra(Intent.EXTRA_TEXT, "test n"
+                + getResources().getString(R.string.whatsapp_suffix));
+        sendIntent.putExtra("jid", smsNumber + "@s.whatsapp.net"); //phone number without "+" prefix
+        sendIntent.setPackage("com.whatsapp");
+
+        startActivity(sendIntent);
     }
 
     @Override
@@ -75,6 +77,36 @@ public class MainActivity extends AppCompatActivity {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         }
+        if (!isAccessibilityOn(getApplicationContext(), WhatsappAccessibilityService.class)) {
+            Intent intent = new Intent (Settings.ACTION_ACCESSIBILITY_SETTINGS);
+            startActivity(intent);
+        }
+    }
+
+    private boolean isAccessibilityOn (Context context, Class<? extends AccessibilityService> clazz) {
+        int accessibilityEnabled = 0;
+        final String service = context.getPackageName () + "/" + clazz.getCanonicalName ();
+        try {
+            accessibilityEnabled = Settings.Secure.getInt (context.getApplicationContext ().getContentResolver (), Settings.Secure.ACCESSIBILITY_ENABLED);
+        } catch (Settings.SettingNotFoundException ignored) {  }
+
+        TextUtils.SimpleStringSplitter colonSplitter = new TextUtils.SimpleStringSplitter(':');
+
+        if (accessibilityEnabled == 1) {
+            String settingValue = Settings.Secure.getString (context.getApplicationContext ().getContentResolver (), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
+            if (settingValue != null) {
+                colonSplitter.setString (settingValue);
+                while (colonSplitter.hasNext ()) {
+                    String accessibilityService = colonSplitter.next ();
+
+                    if (accessibilityService.equalsIgnoreCase (service)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 
     @Override
