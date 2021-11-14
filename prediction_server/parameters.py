@@ -1,7 +1,7 @@
 import numpy as np
 import logging
 SAMPLE_RATE = 30 # TODO: update after deciding final sampling rate
-WINDOW_SECONDS = 1.5 # TODO: update after deciding final window size
+WINDOW_SECONDS = 2 # TODO: update after deciding final window size
 TIME_STEPS = int(SAMPLE_RATE * WINDOW_SECONDS)
 STRIDE = 20
 # FEATURE_LABELS = ['a_x', 'a_y', 'a_z', 'g_x', 'g_y', 'g_z']
@@ -14,7 +14,7 @@ FEATURE_LABELS = [
 
 N_FEATURES = len(FEATURE_LABELS)
 INPUT_SHAPE = (TIME_STEPS, N_FEATURES)
-INPUT_TYPE = np.float32
+INPUT_TYPE = np.float64
 MQTT_BROKER_HOST = 'localhost'
 MQTT_BROKER_PORT = 1883
 LOG_LEVEL = logging.INFO

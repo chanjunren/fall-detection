@@ -6,7 +6,6 @@ from paho.mqtt import client as mqttclient
 from parameters import INPUT_SHAPE, INPUT_TYPE, SAMPLE_RATE, MQTT_BROKER_HOST
 from struct import pack, unpack
 
-
 def encode_mqtt_request(client_id, request_id, x):
     metadata = json.dumps({
         'client_id': client_id,
@@ -17,7 +16,7 @@ def encode_mqtt_request(client_id, request_id, x):
     data = header + metadata + x.tobytes()
     return data
 
-
+# to send np.array over MQTT
 def decode_mqtt_payload(payload):
     len = unpack('I', payload[:4])[0]
     metadata = json.loads(payload[4:4+len])
@@ -26,6 +25,15 @@ def decode_mqtt_payload(payload):
     y = np.frombuffer(buffer, dtype=np.float32).reshape(metadata['shape'])
     return request_id, y
 
+# to send np.array over MQTT
+def decode_mqtt_payload2(payload):
+    data = json.loads(payload)
+    request_id = data['request_id']
+    y = {
+        'label': data['label'],
+        'conf': data['conf']
+    }
+    return request_id, y
 
 class ClassificationClient(mqttclient.Client):
     def __init__(self):
@@ -38,12 +46,13 @@ class ClassificationClient(mqttclient.Client):
         self.request_id += 1
         data = encode_mqtt_request(self.id, self.request_id, x)
         self.publish('request', data)
-        print(f'[SEND] Request#{self.request_id} -> {x.shape}')
+        # print(f'[SEND] Request#{self.request_id} -> {x.shape}')
 
 
     def on_message(self, _, userdata, message):
-        request_id, y = decode_mqtt_payload(message.payload)
-        print(f'[RECV] Request#{request_id} <- [{y.shape}]')
+        request_id, y = decode_mqtt_payload2(message.payload)
+        print(request_id, y['label'], y['conf'])
+        # print(f'[RECV] Request#{request_id} <- [{y.shape}]')
 
 
     def on_connect(self, _, userdata, flags, rc):

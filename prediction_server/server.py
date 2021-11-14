@@ -4,7 +4,7 @@ import json
 from struct import pack, unpack
 
 import numpy as np
-from model import BinaryClassifier
+from model import BinaryClassifier, MultiClassifier
 from h5py import is_hdf5
 
 from concurrent.futures import ProcessPoolExecutor as Pool
@@ -12,8 +12,7 @@ from multiprocessing import Queue, Barrier
 from threading import Thread
 from os import path, getpid
 
-from parameters import INPUT_SHAPE, MQTT_BROKER_HOST
-
+from parameters import INPUT_SHAPE, MQTT_BROKER_HOST, INPUT_TYPE
 
 def init_worker(br, jq, pq):
     global barrier, job_q, pub_q
@@ -30,7 +29,7 @@ def decode_mqtt_payload(payload):
     buffer = payload[4+len:]
     client_id = metadata['client_id']
     request_id = metadata['request_id']
-    x = np.frombuffer(buffer, dtype=np.float32).reshape(metadata['shape'])
+    x = np.frombuffer(buffer, dtype=INPUT_TYPE).reshape(metadata['shape'])
     return client_id, request_id, x
 
 
@@ -43,6 +42,17 @@ def encode_mqtt_response(request_id, y):
     data = header + metadata + y.tobytes()
     return data
 
+def encode_mqtt_response2(request_id, y, classifier):
+    idx = np.argmax(y)
+    conf = y[0, idx]
+    label = classifier.CLASSES()[idx]
+
+    data = json.dumps({
+        'request_id': request_id,
+        'label': label,
+        'conf': float(conf)
+    })
+    return data
 
 def classification_loop(worker_id, model_fxn, model_path):
     try:
@@ -72,7 +82,7 @@ class ClassificationServer(mqttclient.Client):
         self.barrier.wait()
         while True:
             client_id, request_id, y = self.pub_q.get()
-            data = encode_mqtt_response(request_id, y)
+            data = encode_mqtt_response2(request_id, y, self.model_fxn)
             self.publish(path.join('results', client_id), data)
             print(f'[SEND  to  {client_id[:4]}] Request#{request_id} -> [{y.shape}]')
 
@@ -103,5 +113,5 @@ if __name__ == "__main__":
     import sys
     n_workers = int(sys.argv[1])
     model_path = sys.argv[2]
-    server = ClassificationServer(n_workers, BinaryClassifier, model_path)
+    server = ClassificationServer(n_workers, MultiClassifier, model_path)
     server.start()

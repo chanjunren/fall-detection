@@ -50,7 +50,7 @@ class MqttMixer(Client):
     def on_output(self, output):
         data = b''.join(output)
         self.publish(self.output_topic, data)
-        print(output)
+        # print(output)
 
     def on_message(self, _, userdata, message):
         base, channel = path.split(message.topic)
@@ -64,7 +64,7 @@ class MqttMixer(Client):
         if rc == 0:
             for topic in self.input_topics:
                 self.subscribe(topic)
-                print('subscribed to', topic)
+                print(f'subscribed to "{topic}"')
         else:
             print("Failed to connect to broker!", rc)
 
@@ -73,13 +73,11 @@ class MqttMixer(Client):
         try:
             while True:
                 output = self.output.get()
-                if self.align:
-                    latest = all([q.qsize() == 0 for q in self.queue])
-                    if not latest:
-                        print('process time > injest time')
-                        self.queue = [Queue() for _ in range(self.n_channels)]
-                    else:
-                        self.on_output(output)
+                if self.align and self.n_workers == 2:
+                    q0 = self.queue[0].qsize()
+                    q1 = self.queue[1].qsize()
+                    print(q0, q1)
+                    self.on_output(output)
                 else:
                     self.on_output(output)
         except Exception as e:
@@ -92,7 +90,7 @@ class MqttMixer(Client):
                 return Queue.get(queue, timeout=self.timeout)
             except QueueEmpty:
                 self.alive[i].clear()
-                print('Disabled...')
+                print('Q empty!...')
                 return None
 
         with PoolExecutor(3) as pool:
@@ -111,18 +109,17 @@ class MqttMixer(Client):
             executor.submit(self.on_output_loop)
             self.connect(self.hostname, self.port)
             self.loop_start()
-            return fut
-
 
 
 if __name__ == "__main__":
     import sys
+    import numpy as np
 
     def callb(window):
         a = np.frombuffer(window.tobytes(), dtype=np.float64).reshape(-1, N_FEATURES)
         print(a.shape)
 
-    mixer = MqttMixer(int(sys.argv[2]), sys.argv[1], align=True, timeout=1/20)
+    mixer = MqttMixer(int(sys.argv[2]), sys.argv[1], align=False, timeout=1/10)
     window = RollingWindow(TIME_STEPS, STRIDE, N_FEATURES, 'd', callb)
 
     def on_output(output):

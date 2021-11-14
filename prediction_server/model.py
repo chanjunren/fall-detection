@@ -11,7 +11,7 @@ from os.path import exists as path_exists
 from tensorflow.keras import layers
 from tensorflow.keras.models import load_model, Sequential
 from tensorflow.keras.callbacks import EarlyStopping
-from sklearn.metrics import confusion_matrix, plot_confusion_matrix
+from tensorflow.math import confusion_matrix
 from sklearn.preprocessing import LabelBinarizer
 from parameters import INPUT_SHAPE, TIME_STEPS, N_FEATURES
 
@@ -108,7 +108,7 @@ class Classifier(ABC):
         save=True, dst_path=None, overwrite='prompt',
         verbose=1
         ):
-
+        y_targ = y['test'].copy()
         for split in y:
             y[split] = self.encode_target(y[split])
 
@@ -147,6 +147,19 @@ class Classifier(ABC):
                     )
             loss, accuracy = self.model.evaluate(x['test'], y['test'], batch_size=batch_sz, verbose=verbose)
 
+            if isinstance(self, MultiClassifier):
+                y_pred = self.model.predict(x['test'])
+                y_pred = self.decode_prediction(y_pred, threshold=0, tostring=False)
+                conf_mat = confusion_matrix(y_targ, y_pred)
+                if verbose > 0:
+                    print(
+                        '',
+                        'Confusion Matrix',
+                        self.CLASSES_INV().keys(),
+                        conf_mat,
+                        sep='\n'
+                    )
+
         if display_graph:
             Classifier.plot_training_progress(hist, verbose=verbose)
 
@@ -159,6 +172,11 @@ class BinaryClassifier(Classifier):
     @classmethod
     def CLASSES(cls):
         return {0: 'not_fall', 1: 'fall'}
+
+    @classmethod
+    def CLASSES_INV(cls):
+        # example classes
+        return {'not_fall':0, 'fall':1}
 
     @classmethod
     def N_CLASSES(cls):
@@ -190,18 +208,23 @@ class MultiClassifier(Classifier):
     @classmethod
     def CLASSES(cls):
         # example classes
-        return {0: 'walking', 1: 'climbing', 2: 'stationary', -1:'unknown'}
+        return {0: 'walk', 1: 'upstairs', 2: 'downstairs', 3: 'stationary', 4:'sit', -1:'unknown'}
+
+    @classmethod
+    def CLASSES_INV(cls):
+        # example classes
+        return {'walk':0, 'upstairs':1, 'downstairs':2, 'stationary':3, 'sit':4, 'unknown':-1}
 
     @classmethod
     def N_CLASSES(cls):
-        return 3
+        return 5
 
     @classmethod
     def get_and_compile_fresh_model(cls):
         model = Sequential([
-            layers.LSTM(128, input_shape=INPUT_SHAPE),
+            layers.LSTM(64, input_shape=INPUT_SHAPE),
             layers.Dropout(.5),
-            layers.Dense(units=64, activation='relu'),
+            layers.Dense(units=24, activation='relu'),
             layers.Dense(units=cls.N_CLASSES(), activation='softmax'),
         ])
         model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
@@ -270,9 +293,13 @@ if __name__ == "__main__":
 
 
     mo = MultiClassifier()
-    fake_data_gen = Fake(20)
-    n = mo.N_CLASSES()
-    x = fake_data_gen.get_x()
-    y = fake_data_gen.get_y(n)
+    # fake_data_gen = Fake(20)
+    # n = mo.N_CLASSES()
+    # x = fake_data_gen.get_x()
+    # y = fake_data_gen.get_y(n)
 
-    mo.train(x, y, 10, 5, display_graph=True, dst_path='temp2', overwrite='overwrite', verbose=0)
+    from data import to_data_set
+    import sys
+    x,y = to_data_set()
+    print(x,y)
+    mo.train(x, y, 3, 10, display_graph=True, dst_path=sys.argv[1], overwrite='overwrite', verbose=1)
