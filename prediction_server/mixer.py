@@ -50,7 +50,6 @@ class MqttMixer(Client):
     def on_output(self, output):
         data = b''.join(output)
         self.publish(self.output_topic, data)
-        # print(output)
 
     def on_message(self, _, userdata, message):
         base, channel = path.split(message.topic)
@@ -116,18 +115,18 @@ if __name__ == "__main__":
     import sys
     import numpy as np
 
-    def callb(window):
-        a = np.frombuffer(window.tobytes(), dtype=np.float64).reshape(-1, N_FEATURES)
-        print(a.shape)
+    # def callb(window):
+    #     a = np.frombuffer(window.tobytes(), dtype=np.float64).reshape(-1, N_FEATURES)
+    #     print(a.shape)
 
     mixer = MqttMixer(int(sys.argv[2]), sys.argv[1], align=False, timeout=1/10)
-    window = RollingWindow(TIME_STEPS, STRIDE, N_FEATURES, 'd', callb)
+    # window = RollingWindow(TIME_STEPS, STRIDE, N_FEATURES, 'd', callb)
 
-    def on_output(output):
-        a = array('d')
-        a.frombytes(output[0])
-        a.frombytes(output[1])
-        window.write(a)
+    # def on_output(output):
+    #     a = array('d')
+    #     a.frombytes(output[0])
+    #     a.frombytes(output[1])
+    #     window.write(a)
 
     mixer.on_output = on_output
     mixer.start()
