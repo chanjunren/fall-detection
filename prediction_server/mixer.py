@@ -128,5 +128,5 @@ if __name__ == "__main__":
     #     a.frombytes(output[1])
     #     window.write(a)
 
-    mixer.on_output = on_output
+    # mixer.on_output = on_output
     mixer.start()
