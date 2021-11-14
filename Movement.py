@@ -1,9 +1,13 @@
 import asyncio
 import struct
+import time
+import csv
+import queue
 from bleak import BleakClient
 
 idx = 0
 
+dataQueue = queue.Queue()
 class Mov:
     SERV_UUID = "F000AA80-0451-4000-B000-000000000000" # ?
     DATA_UUID = "F000AA81-0451-4000-B000-000000000000" # R N
@@ -98,6 +102,7 @@ class Mov:
         return p >= Mov.SENSOR_MIN_UPDATE_PERIOD // Mov.SENSOR_PERIOD_RESOLUTION
 
     def handle_movement_notif(self, sender:int, data:bytearray):
+        curr_time = round(time.time() * 1000)
         u = struct.unpack('9h', data)
 
         gyr = (u[0], u[1], u[2])
@@ -106,17 +111,28 @@ class Mov:
 
         acc = self.convertAcc(acc[0]), self.convertAcc(acc[1]), self.convertAcc(acc[2])
         gyr = self.convertGyr(gyr[0]), self.convertGyr(gyr[1]), self.convertGyr(gyr[2])
-        mag = self.convertMag(mag[0]), self.convertMag(mag[1]), self.convertMag(mag[2])
+        # mag = self.convertMag(mag[0]), self.convertMag(mag[1]), self.convertMag(mag[2])
 
         global idx
         idx += 1
-
-        print(idx, end=' | ')
-        print('ACC x%7.3f y%7.3f z%7.3f | ' % acc, end='')
-        print('GYR x%7.3f y%7.3f z%7.3f | ' % gyr)
+        dataQueue.put([curr_time] + [acc[0]] + [acc[1]] + [acc[2]] + [gyr[0]] + [gyr[1]] + [gyr[2]])
+        # print('ACC x%7.3f y%7.3f z%7.3f | ' % acc, end='')
+        # print('GYR x%7.3f y%7.3f z%7.3f | ' % gyr)
         # print('MAG x%7.3f y%7.3f z%7.3f   ' % mag)
         return mag, acc, gyr
 
+    def current_milli_time():
+        return round(time.time() * 1000)
+
+    def save_to_csv(self, csv_name):
+        # wristDataList = [a + b[1::] for a, b in zip(list(wristAccelDataQueue.queue), list(wristGyroDataQueue.queue))]
+        fields = ['Timestamp', 'ax', 'ay', 'az', 'gx', 'gy', 'gz']
+        filename = f'{csv_name}' + '.csv'
+        with open(filename, 'a', newline='') as f:
+            write = csv.writer(f)
+            write.writerow(fields)
+            write.writerows(list(dataQueue.queue))
+            f.close()
 
     async def subscribe(self):
         await self.client.start_notify(Mov.DATA_UUID, self.handle_movement_notif)

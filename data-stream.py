@@ -17,6 +17,7 @@ wristGyroDataQueue = queue.Queue()
 waistAccelDataQueue = queue.Queue()
 waistGyroDataQueue = queue.Queue()
 
+connectionStatus = []
 
 class Service:
     """
@@ -106,11 +107,11 @@ class AccelerometerSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
         '''Returns (x_accel, y_accel, z_accel) in units of g'''
         rawVals = data[3:6]
         processed_data = [timestamp] + [ v*self.scale for v in rawVals ]
-        wristAccelDataQueue.put(processed_data)
-        # if device == "54:6c:0e:B7:90:84":
-        #     wristAccelDataQueue.put(processed_data)
-        # else:
-        #     waistAccelDataQueue.put(processed_data)
+        # wristAccelDataQueue.put(processed_data)
+        if device == "54:6c:0e:B7:90:84":
+            wristAccelDataQueue.put(processed_data)
+        else:
+            waistAccelDataQueue.put(processed_data)
         # print(f"[{device}] Accelerometer:", tuple([ v*self.scale for v in rawVals ]))
 
 class GyroscopeSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
@@ -123,11 +124,11 @@ class GyroscopeSensorMovementSensorMPU9250(MovementSensorMPU9250SubService):
         '''Returns (x_gyro, y_gyro, z_gyro) in units of degrees/sec'''
         rawVals = data[0:3]
         processed_data = [timestamp] + [ v*self.scale for v in rawVals ]
-        wristGyroDataQueue.put(processed_data)
-        # if device == "54:6c:0e:B7:90:84":
-        #     wristGyroDataQueue.put(processed_data)
-        # else:
-        #     waistGyroDataQueue.put(processed_data)
+        # wristGyroDataQueue.put(processed_data)
+        if device == "54:6c:0e:B7:90:84":
+            wristGyroDataQueue.put(processed_data)
+        else:
+            waistGyroDataQueue.put(processed_data)
         # print(f"[{device}] Gyroscope:", tuple([ v*self.scale for v in rawVals ]))
 
 async def connect_to_device(address):
@@ -136,6 +137,8 @@ async def connect_to_device(address):
         print(f"Attempting connection to {address}")
         x = await client.is_connected()
         print(f"Connected to {x}")
+        global connectionStatus
+        connectionStatus.append(True)
         try:
             acc_sensor = AccelerometerSensorMovementSensorMPU9250()
             gyro_sensor = GyroscopeSensorMovementSensorMPU9250()
@@ -148,7 +151,6 @@ async def connect_to_device(address):
         except Exception as e:
             print(e)
             save_to_csv()
-        save_to_csv()
     print(f"Disconnected from {address}")
 
 def reset_queues():
@@ -165,10 +167,10 @@ def reset_queues():
 def save_to_csv():
     print(f"wristAccel: {len(list(wristAccelDataQueue.queue))}")
     print(f"wristGyro: {len(list(wristGyroDataQueue.queue))}")
-    # print(f"waistAccel: {len(list(waistAccelDataQueue.queue))}")
-    # print(f"waistGyro: {len(list(waistGyroDataQueue.queue))}")
+    print(f"waistAccel: {len(list(waistAccelDataQueue.queue))}")
+    print(f"waistGyro: {len(list(waistGyroDataQueue.queue))}")
     wristDataList = [a + b[1::] for a, b in zip(list(wristAccelDataQueue.queue), list(wristGyroDataQueue.queue))]
-    # waistDataList = [a + b[1::] for a, b in zip(list(waistGyroDataQueue.queue), list(waistGyroDataQueue.queue))]
+    waistDataList = [a + b[1::] for a, b in zip(list(waistGyroDataQueue.queue), list(waistGyroDataQueue.queue))]
     fields = ['Timestamp', 'ax', 'ay', 'az', 'gx', 'gy', 'gz']
     with open('wristData.csv', 'a', newline='') as f:
         write = csv.writer(f)
@@ -176,11 +178,11 @@ def save_to_csv():
         write.writerows(wristDataList)
         f.close()
 
-    # with open('waistData.csv', 'a', newline='') as f:
-    #     write = csv.writer(f)
-    #     write.writerow(fields)
-    #     write.writerows(waistDataList)
-    #     f.close()
+    with open('waistData.csv', 'a', newline='') as f:
+        write = csv.writer(f)
+        write.writerow(fields)
+        write.writerows(waistDataList)
+        f.close()
 
 def current_milli_time():
     return round(time.time() * 1000)
@@ -193,5 +195,7 @@ if __name__ == "__main__":
     import os
     os.environ["PYTHONASYNCIODEBUG"] = str(1)
     # addresses = ["54:6c:0e:B7:90:84", "54:6C:0E:B4:23:85"]
-    addresses = ["54:6c:0e:B7:90:84"]
+    addresses = ["54:6c:0e:B7:90:84", "54:6C:0E:B7:AA:84"]
+    # addresses = ["54:6c:0e:B7:90:84"]
     asyncio.run(main(addresses))  
+    save_to_csv()

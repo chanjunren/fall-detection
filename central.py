@@ -1,3 +1,4 @@
+from multiprocessing import Process
 import logging
 # logging.basicConfig(level=logging.DEBUG)
 import asyncio
@@ -8,34 +9,20 @@ import math
 from bleak import BleakClient
 from Movement import Mov
 
-ADDRESS = (
-    #"54:6c:0e:B7:90:84" # TODO: not set yet
-    "54:6C:0E:B4:23:85"
-    if platform.system() != "Darwin"
-    else "5FED95F3-EC32-4D3B-AD80-042D49AC1174"
-)
-
-async def main():
+async def collect_data(address, filename):
+    ADDRESS = (
+        #"54:6c:0e:B7:90:84" # TODO: not set yet
+        # "54:6C:0E:B4:23:85"
+        # "54:6C:0E:B7:AA:84"
+        address
+        if platform.system() != "Darwin"
+        else "5FED95F3-EC32-4D3B-AD80-042D49AC1174"
+    )
     async with BleakClient(ADDRESS) as central:
         print((central.is_connected, central.mtu_size))
         imu = Mov(central)
-        # valid = await imu.setPeriod(9)
-        # await asyncio.sleep(.1)
-        # period = await imu.getPeriod()
-        # assert not valid and period == Mov.SENSOR_MIN_UPDATE_PERIOD, str((valid, period))
-        #
-        # valid = await imu.setPeriod(10)
-        # await asyncio.sleep(.1)
-        # period = await imu.getPeriod()
-        # assert valid and period == 10, str((valid, period))
-        #
-        # valid = await imu.setPeriod(11)
-        # await asyncio.sleep(.1)
-        # period = await imu.getPeriod()
-        # assert valid and period == 11, str((valid, period))
-
         period = 33
-        time_s = 30
+        time_s = 60
         e = math.floor(1 + time_s * 1000 / (period * Mov.SENSOR_PERIOD_RESOLUTION)) # resolution = 10ms
         print("Expected # of readings is:", e)
         await imu.setPeriod(period)
@@ -46,10 +33,26 @@ async def main():
         await imu.subscribe()
         await asyncio.sleep(time_s)
         await imu.unsubscribe()
+        imu.save_to_csv(filename)
         #####################
         await imu.disable()
         # valid = await imu.setPeriod(Mov.SENSOR_MIN_UPDATE_PERIOD)
         await asyncio.sleep(1)
 
+def run(address, filename):
+    asyncio.run(collect_data(address, filename))
+
 if __name__ == "__main__":
-    asyncio.run(main())
+    # "54:6c:0e:B7:90:84" # TODO: not set yet
+    # "54:6C:0E:B4:23:85"
+    # "54:6C:0E:B7:AA:84"
+    wristAddress = "54:6c:0e:B7:90:84"
+    waistAddress = "54:6C:0E:B4:23:85"
+    filename = sys.argv[1]
+    print(f"Saving to file: {filename}")
+    wrist_process = Process(target=run, args=(wristAddress, filename+'-wrist'))
+    waist_process = Process(target=run, args=(waistAddress, filename+'-waist'))
+    wrist_process.start()
+    waist_process.start()
+    wrist_process.join()
+    waist_process.join()
