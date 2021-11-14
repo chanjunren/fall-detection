@@ -2,8 +2,13 @@ import asyncio
 import struct
 import time
 import csv
+import array
 import queue
+import paho.mqtt.client as mqtt
 from bleak import BleakClient
+
+# Wrist channel 1
+# Waist channel 0
 
 idx = 0
 
@@ -34,9 +39,22 @@ class Mov:
     SENSOR_MIN_UPDATE_PERIOD = 10
     SENSOR_PERIOD_RESOLUTION = 1
 
-    def __init__(self, client:BleakClient):
+    def __init__(self, client:BleakClient, address, channel):
         self.client = client
         self.accRange = Mov.ACC_RANGE_2
+        self.address = address
+        self.channel = channel
+        # self.mqtt_client = mqtt.Client()
+        # self.mqtt_client.on_connect = self.on_connect
+        # self.mqtt_client.username_pw_set("testuser1", "pass")
+        # self.mqtt_client.connect('192.168.10.126', 18831, 60)
+        # self.mqtt_topic = f"mixer/data_collection/in/{self.channel}"
+
+    def on_connect(client, userdata, flags, rc):
+        if rc == 0:
+            print('Client Successfully Connected to Broker')
+        else:
+            print("Failed to connect to broker!", rc)
 
     '''
     calculate acceleration, unit G, range variable
@@ -102,7 +120,7 @@ class Mov:
         return p >= Mov.SENSOR_MIN_UPDATE_PERIOD // Mov.SENSOR_PERIOD_RESOLUTION
 
     def handle_movement_notif(self, sender:int, data:bytearray):
-        curr_time = round(time.time() * 1000)
+        # curr_time = round(time.time() * 1000)
         u = struct.unpack('9h', data)
 
         gyr = (u[0], u[1], u[2])
@@ -113,9 +131,12 @@ class Mov:
         gyr = self.convertGyr(gyr[0]), self.convertGyr(gyr[1]), self.convertGyr(gyr[2])
         # mag = self.convertMag(mag[0]), self.convertMag(mag[1]), self.convertMag(mag[2])
 
-        global idx
-        idx += 1
-        dataQueue.put([curr_time] + [acc[0]] + [acc[1]] + [acc[2]] + [gyr[0]] + [gyr[1]] + [gyr[2]])
+        # global idx
+        # idx += 1
+        processed_data = [acc[0]] + [acc[1]] + [acc[2]] + [gyr[0]] + [gyr[1]] + [gyr[2]]
+        # ar = array.array('d', [acc[0], acc[1], acc[2], gyr[0], gyr[1], gyr[2]])
+        dataQueue.put(processed_data)
+        # self.mqtt_client.publish(self.mqtt_topic, ar.tobytes())
         # print('ACC x%7.3f y%7.3f z%7.3f | ' % acc, end='')
         # print('GYR x%7.3f y%7.3f z%7.3f | ' % gyr)
         # print('MAG x%7.3f y%7.3f z%7.3f   ' % mag)

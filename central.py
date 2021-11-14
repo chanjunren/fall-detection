@@ -9,7 +9,7 @@ import math
 from bleak import BleakClient
 from Movement import Mov
 
-async def collect_data(address, filename):
+async def collect_data(address, filename, channel):
     ADDRESS = (
         #"54:6c:0e:B7:90:84" # TODO: not set yet
         # "54:6C:0E:B4:23:85"
@@ -20,9 +20,9 @@ async def collect_data(address, filename):
     )
     async with BleakClient(ADDRESS) as central:
         print((central.is_connected, central.mtu_size))
-        imu = Mov(central)
+        imu = Mov(central, address, channel)
         period = 33
-        time_s = 60
+        time_s = 90
         e = math.floor(1 + time_s * 1000 / (period * Mov.SENSOR_PERIOD_RESOLUTION)) # resolution = 10ms
         print("Expected # of readings is:", e)
         await imu.setPeriod(period)
@@ -39,19 +39,21 @@ async def collect_data(address, filename):
         # valid = await imu.setPeriod(Mov.SENSOR_MIN_UPDATE_PERIOD)
         await asyncio.sleep(1)
 
-def run(address, filename):
-    asyncio.run(collect_data(address, filename))
+def run(address, filename, channel):
+    asyncio.run(collect_data(address, filename, channel))
 
 if __name__ == "__main__":
     # "54:6c:0e:B7:90:84" # TODO: not set yet
     # "54:6C:0E:B4:23:85"
     # "54:6C:0E:B7:AA:84"
+    # "54:6C:0E:53:35:E2"
     wristAddress = "54:6c:0e:B7:90:84"
-    waistAddress = "54:6C:0E:B4:23:85"
+    waistAddress = "54:6C:0E:53:35:E2"
     filename = sys.argv[1]
     print(f"Saving to file: {filename}")
-    wrist_process = Process(target=run, args=(wristAddress, filename+'-wrist'))
-    waist_process = Process(target=run, args=(waistAddress, filename+'-waist'))
+    # 0 = wrist channel , 1 = waist channel
+    wrist_process = Process(target=run, args=(wristAddress, filename+'-wrist', 1))
+    waist_process = Process(target=run, args=(waistAddress, filename+'-waist', 0))
     wrist_process.start()
     waist_process.start()
     wrist_process.join()
