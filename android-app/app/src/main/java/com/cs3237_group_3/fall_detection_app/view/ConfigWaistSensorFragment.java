@@ -1,8 +1,10 @@
 package com.cs3237_group_3.fall_detection_app.view;
 
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -92,15 +94,27 @@ public class ConfigWaistSensorFragment extends Fragment
         backBtn = view.findViewById(R.id.backBtn);
         backBtn.setOnClickListener(v ->
                 navController.navigate(R.id.action_configWaistSensorFragment_to_homeFragment));
-
+        globalViewModel.initBleServices(
+                (BluetoothManager) getActivity().getSystemService(Context.BLUETOOTH_SERVICE),
+                getContext());
+        bleManager = globalViewModel.getBleManager();
         initBleCallBack();
-        bleManager.startBleScanForConfig(scanCallback);
+        bleManager.startBleScan(scanCallback);
     }
 
     @Override
     public void onStop() {
         super.onStop();
         bleManager.stopBleScan(scanCallback);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        globalViewModel.initBleServices(
+                (BluetoothManager) getActivity().getSystemService(Context.BLUETOOTH_SERVICE),
+                getContext());
+        bleManager = globalViewModel.getBleManager();
     }
 
     private void initializeRecylerView() {

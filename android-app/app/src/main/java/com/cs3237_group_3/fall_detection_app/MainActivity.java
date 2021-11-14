@@ -28,18 +28,18 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 //        MqttClient mqttClient = new MqttClient(getApplicationContext());
         GlobalViewModel globalViewModel = new ViewModelProvider(this).get(GlobalViewModel.class);
-        globalViewModel.initBleServices(
-                (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE),
-                getApplicationContext());
-        final Observer<ConfigurationData> configObserver = config -> {
-            if (config == null) {
-                Log.e(TAG, "ConfigurationData is null");
-                return;
-            }
-            globalViewModel.getBleManager().connectToSensorTags(config.getWristSensorMacAdd(),
-                    config.getWaistSensorMacAdd());
-        };
-        globalViewModel.getConfigurationLiveDataFromRepo().observe(this, configObserver);
+//        globalViewModel.initBleServices(
+//                (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE),
+//                getApplicationContext());
+//        final Observer<ConfigurationData> configObserver = config -> {
+//            if (config == null) {
+//                Log.e(TAG, "ConfigurationData is null");
+//                return;
+//            }
+//            globalViewModel.getBleManager().connectToSensorTags(config.getWristSensorMacAdd(),
+//                    config.getWaistSensorMacAdd());
+//        };
+//        globalViewModel.getConfigurationLiveDataFromRepo().observe(this, configObserver);
     }
 
     @Override

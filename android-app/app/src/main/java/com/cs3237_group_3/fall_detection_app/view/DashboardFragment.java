@@ -79,8 +79,6 @@ public class DashboardFragment extends Fragment
         serverConnTv = view.findViewById(R.id.serverConnTv);
         CircleButton refreshServerConnBtn = view.findViewById(R.id.refreshServerConnBtn);
         refreshServerConnBtn.setOnClickListener(this);
-
-
     }
 
     private void initObservers() {
@@ -98,7 +96,7 @@ public class DashboardFragment extends Fragment
                 Log.e(TAG, "connRes is null");
                 return;
             }
-            setConnRes(wristSensorConnCard, wristSensorConnTv, wristTagConnRes);
+            setConnRes(wristSensorConnCard, wristSensorConnTv, wristSensorLiv, wristTagConnRes);
         };
         bleManager.getWristConnStatusLiveData().observe(getViewLifecycleOwner(),
                 wristTagConnStatusObserver);
@@ -108,13 +106,14 @@ public class DashboardFragment extends Fragment
                 Log.e(TAG, "connRes is null");
                 return;
             }
-            setConnRes(waistSensorConnCard, waistSensorConnTv, waistTagConnRes);
+            setConnRes(waistSensorConnCard, waistSensorConnTv, waistSensorLiv, waistTagConnRes);
         };
         bleManager.getWaistConnStatusLiveData().observe(getViewLifecycleOwner(),
                 waistTagConnStatusObserver);
     }
 
-    private void setConnRes(MaterialCardView card, TextView tv, boolean connSuccess) {
+    private void setConnRes(MaterialCardView card, TextView tv,
+                            AVLoadingIndicatorView liv, boolean connSuccess) {
         if (connSuccess) {
             tv.setText("Connected");
             card.setCardBackgroundColor(getResources().getColor(R.color.test_success));
@@ -122,21 +121,27 @@ public class DashboardFragment extends Fragment
             tv.setText("Not Connected");
             card.setCardBackgroundColor(getResources().getColor(R.color.test_fail));
         }
+        liv.hide();
         card.setVisibility(View.VISIBLE);
+    }
+
+    private void showLoading(MaterialCardView card, TextView tv, AVLoadingIndicatorView liv) {
+        liv.setVisibility(View.VISIBLE);
+        card.setVisibility(View.INVISIBLE);
+        tv.setVisibility(View.VISIBLE);
     }
 
     @Override
     public void onClick(View v) {
         // For refresh buttons
         if (v.getId() == R.id.refreshWristSensorBtn) {
-            wristSensorLiv.hide();
-            bleManager.connectToWristSensorTag();
+            showLoading(wristSensorConnCard, wristSensorConnTv, wristSensorLiv);
+            bleManager.refreshConnectionForWristTag();
         } else if (v.getId() == R.id.refreshWaistSensorBtn) {
-            waistSensorLiv.hide();
-            bleManager.connectToWaistSensorTag();
+            showLoading(waistSensorConnCard, waistSensorConnTv, waistSensorLiv);
+            bleManager.refreshConnectionForWaistTag();
         } else if (v.getId() == R.id.refreshServerConnBtn) {
-            serverLiv.hide();
-            setConnRes(serverConnCard, serverConnTv, false);
+            showLoading(serverConnCard, serverConnTv, serverLiv);
         }
     }
 
