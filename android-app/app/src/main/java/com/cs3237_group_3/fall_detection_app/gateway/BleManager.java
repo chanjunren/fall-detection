@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
@@ -23,6 +24,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static com.cs3237_group_3.fall_detection_app.util.Utilities.BATT_SERVICE_UUID;
+import static com.cs3237_group_3.fall_detection_app.util.Utilities.CC2650_CCCD_UUID;
 import static com.cs3237_group_3.fall_detection_app.util.Utilities.CC2650_DATA_UUID;
 import static com.cs3237_group_3.fall_detection_app.util.Utilities.CC2650_DATA_UUID_STRING;
 import static com.cs3237_group_3.fall_detection_app.util.Utilities.CC2650_SERVICE_UUID;
@@ -206,6 +208,14 @@ public class BleManager {
             }
 
             @Override
+            public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+                super.onCharacteristicChanged(gatt, characteristic);
+                Log.i(TAG, "Characteristic changed proc!");
+                broadcastUpdate(null, characteristic);
+
+            }
+
+            @Override
             public void onServicesDiscovered(BluetoothGatt gatt, int status) {
                 super.onServicesDiscovered(gatt, status);
 //                for (BluetoothGattService s: gatt.getServices()) {
@@ -218,7 +228,8 @@ public class BleManager {
                         for (BluetoothGattCharacteristic c: service.getCharacteristics()) {
                             if (c.getUuid().toString().equals(CC2650_DATA_UUID_STRING)) {
                                 Log.i(TAG, "Characteristic UUID found!");
-                                gatt.readCharacteristic(c);
+                                gatt.setCharacteristicNotification(c, true);
+//                                enableNotifications(gatt, c);
                             }
                         }
                     }
@@ -262,6 +273,14 @@ public class BleManager {
                             characteristic.getUuid().toString());
                 }
             }
+
+            @Override
+            public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+                super.onCharacteristicChanged(gatt, characteristic);
+                Log.i(TAG, "Characteristic changed proc!");
+                broadcastUpdate(null, characteristic);
+            }
+
             @Override
             public void onServicesDiscovered(BluetoothGatt gatt, int status) {
                 super.onServicesDiscovered(gatt, status);
@@ -271,17 +290,11 @@ public class BleManager {
                         for (BluetoothGattCharacteristic c: service.getCharacteristics()) {
                             if (c.getUuid().toString().equals(CC2650_DATA_UUID_STRING)) {
                                 Log.i(TAG, "Characteristic UUID found!");
-                                gatt.readCharacteristic(c);
+                                enableNotifications(gatt, c);
                             }
                         }
                     }
                 }
-//                for (BluetoothGattService s: gatt.getServices()) {
-//                    Log.i(TAG, "===== " + s.getUuid().toString() + " =====");
-//                    for (BluetoothGattCharacteristic c: s.getCharacteristics()) {
-//                        Log.i(TAG, "\tCharacteristic UUID: " + c.getUuid().toString());
-//                    }
-//                }
             }
         };
     }
@@ -302,22 +315,6 @@ public class BleManager {
         wristSensorTag.connectGatt(context, true, wristConnCallback);
     }
 
-    public void readCharacteristicFromUuid(BluetoothGatt gatt, UUID serviceUuid, UUID charUuid) {
-        Log.i(TAG, "Reading characteristic from UUID....");
-        if (gatt.getService(serviceUuid) == null) {
-            Log.e(TAG, "Service is null");
-        }
-        BluetoothGattCharacteristic characteristic =
-                gatt.getService(serviceUuid) != null
-                        ? gatt.getService(serviceUuid).getCharacteristic(charUuid)
-                        : null;
-        if (characteristic == null) {
-            Log.e(TAG, "Characteristic is null");
-        }
-        // Check for null
-        gatt.readCharacteristic(characteristic);
-    }
-
     private void broadcastUpdate(final String action,
                                  final BluetoothGattCharacteristic characteristic) {
         Log.i(TAG, "Broadcasting update....");
@@ -331,5 +328,64 @@ public class BleManager {
             Log.i(TAG, stringBuilder.toString());
         }
         context.sendBroadcast(intent);
+    }
+
+    public void setCharacteristicNotification(BluetoothGatt bluetoothGatt,
+        BluetoothGattCharacteristic characteristic,boolean enabled) {
+        if (bluetoothGatt == null) {
+            Log.w(TAG, "BluetoothGatt not initialized");
+            return;
+        }
+        bluetoothGatt.setCharacteristicNotification(characteristic, enabled);
+    }
+    /**
+     * @return Returns <b>true</b> if property is supports notification
+     */
+    public boolean isCharacteristicNotifiable(BluetoothGattCharacteristic pChar) {
+        return (pChar.getProperties() & BluetoothGattCharacteristic.PROPERTY_NOTIFY) != 0;
+    }
+
+    private void writeDescriptor(BluetoothGatt gatt,
+                                 BluetoothGattDescriptor descriptor, byte[] payload) {
+        descriptor.setValue(payload);
+        gatt.writeDescriptor(descriptor);
+    }
+
+    private void enableNotifications(BluetoothGatt gatt,
+                                     BluetoothGattCharacteristic characteristic) {
+        if (isCharacteristicNotifiable(characteristic)) {
+            if (gatt.setCharacteristicNotification(characteristic, true)) {
+               Log.i(TAG, "Notifications successfully enabled!");
+               for (BluetoothGattDescriptor desc: characteristic.getDescriptors()) {
+                   Log.i(TAG, "Desc: " + desc.getUuid().toString());
+               }
+               BluetoothGattDescriptor CCCUUID_DES
+                       = characteristic.getDescriptor(CC2650_CCCD_UUID);
+               if (CCCUUID_DES != null) {
+                   writeDescriptor(gatt, CCCUUID_DES, new byte[]{0x01});
+               } else {
+                   Log.e(TAG, "CCCUUID_DES is null!");
+               }
+            }
+        } else {
+            Log.e(TAG, "Characteristic is not notifiable!");
+        }
+//        val cccdUuid = UUID.fromString(CCC_DESCRIPTOR_UUID)
+//        val payload = when {
+//            characteristic.isIndicatable() -> BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
+//            characteristic.isNotifiable() -> BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+//        else -> {
+//                Log.e("ConnectionManager", "${characteristic.uuid} doesn't support notifications/indications")
+//                return
+//            }
+//        }
+//
+//        characteristic.getDescriptor(cccdUuid)?.let { cccDescriptor ->
+//            if (bluetoothGatt?.setCharacteristicNotification(characteristic, true) == false) {
+//                Log.e("ConnectionManager", "setCharacteristicNotification failed for ${characteristic.uuid}")
+//                return
+//            }
+//            writeDescriptor(cccDescriptor, payload)
+//        } ?: Log.e("ConnectionManager", "${characteristic.uuid} doesn't contain the CCC descriptor!")
     }
 }
