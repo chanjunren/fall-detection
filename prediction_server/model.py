@@ -2,7 +2,7 @@
 # from numpy import __version__ as __numpy_version__
 # print("TENSORFLOW_VERSION", __tensorflow_version__)
 # print("NUMPY_VERSION", __numpy_version__)
-
+# exit()
 import matplotlib.pyplot as plt
 import numpy as np
 from h5py import is_hdf5

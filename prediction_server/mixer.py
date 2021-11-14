@@ -5,7 +5,7 @@ from paho.mqtt.client import Client
 from queue import Empty as QueueEmpty
 from concurrent.futures import ThreadPoolExecutor as PoolExecutor
 from array import array
-from parameters import MQTT_BROKER_HOST, MQTT_BROKER_PORT, TIME_STEPS, STRIDE, N_FEATURES
+from parameters import MQTT_BROKER_HOST, MQTT_BROKER_PORT, TIME_STEPS, STRIDE, N_FEATURES, MQTT_USER, MQTT_PASS
 
 class RollingWindow:
     def __init__(self, length:int, stride:int, size:int, type:str, callback):
@@ -107,6 +107,7 @@ class MqttMixer(Client):
         with PoolExecutor(2) as executor:
             executor.submit(self.mix_input_loop)
             executor.submit(self.on_output_loop)
+            self.username_pw_set(MQTT_USER, password=MQTT_PASS)
             self.connect(self.hostname, self.port)
             self.loop_start()
 

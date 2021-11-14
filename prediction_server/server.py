@@ -12,7 +12,7 @@ from multiprocessing import Queue, Barrier
 from threading import Thread
 from os import path, getpid
 
-from parameters import INPUT_SHAPE, MQTT_BROKER_HOST, INPUT_TYPE
+from parameters import INPUT_SHAPE, MQTT_BROKER_HOST, INPUT_TYPE, MQTT_USER, MQTT_PASS
 
 def init_worker(br, jq, pq):
     global barrier, job_q, pub_q
@@ -105,6 +105,7 @@ class ClassificationServer(mqttclient.Client):
         for i in range(self.n_workers):
             pool.submit(classification_loop, i, self.model_fxn, self.model_path)
         Thread(target=self.publish_response_loop).start()
+        self.username_pw_set(MQTT_USER, password=MQTT_PASS)
         self.connect(MQTT_BROKER_HOST)
         self.loop_start()
         self.barrier.wait()
