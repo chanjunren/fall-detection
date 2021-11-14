@@ -3,6 +3,7 @@ package com.cs3237_group_3.fall_detection_app;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
 
 import android.Manifest;
 import android.accessibilityservice.AccessibilityService;
@@ -28,21 +29,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        sendwts();
     }
 
-    protected void sendwts(){
-        String smsNumber = "6596262301"; // E164 format without '+' sign
-        Intent sendIntent = new Intent(Intent.ACTION_SEND);
-        //  Intent sendIntent = new Intent(Intent.ACTION_SENDTO);
-        sendIntent.setType("text/plain");
-        sendIntent.putExtra(Intent.EXTRA_TEXT, "test n"
-                + getResources().getString(R.string.whatsapp_suffix));
-        sendIntent.putExtra("jid", smsNumber + "@s.whatsapp.net"); //phone number without "+" prefix
-        sendIntent.setPackage("com.whatsapp");
 
-        startActivity(sendIntent);
-    }
 
     @Override
     protected void onResume() {
