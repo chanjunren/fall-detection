@@ -11,24 +11,29 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.cs3237_group_3.fall_detection_app.gateway.BleManager;
+import com.cs3237_group_3.fall_detection_app.gateway.MqttClient;
 import com.cs3237_group_3.fall_detection_app.model.ConfigurationData;
 import com.cs3237_group_3.fall_detection_app.repository.AppRepository;
 
 public class GlobalViewModel extends AndroidViewModel {
     private AppRepository appRepository;
     private BleManager bleManager;
+    private MqttClient mqttClient;
+
+    private MutableLiveData<Boolean> isMqttConnected;
 
     public GlobalViewModel(@NonNull Application application) {
         super(application);
         appRepository = new AppRepository(application);
+        isMqttConnected = new MutableLiveData<>(false);
+    }
+
+    public void initMqttService(Context context) {
+        mqttClient = new MqttClient(context, this);
     }
 
     public void initBleServices(BluetoothManager bluetoothManager, Context context) {
         this.bleManager = new BleManager(bluetoothManager, context);
-    }
-
-    public void connectToSensorTags(String wristMacAdd, String waistMacAdd) {
-        bleManager.connectToSensorTags(wristMacAdd, waistMacAdd);
     }
 
     public BleManager getBleManager() {
@@ -49,5 +54,13 @@ public class GlobalViewModel extends AndroidViewModel {
 
     public LiveData<ConfigurationData> getConfigurationLiveDataFromRepo() {
         return appRepository.getConciergeConfigFromDao();
+    }
+
+    public MutableLiveData<Boolean> getMqttConnLiveData() {
+        return isMqttConnected;
+    }
+
+    public void postMqttConnStatus(boolean isMqttConnected) {
+        this.isMqttConnected.postValue(isMqttConnected);
     }
 }

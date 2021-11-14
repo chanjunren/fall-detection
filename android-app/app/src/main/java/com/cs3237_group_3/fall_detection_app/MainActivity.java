@@ -14,6 +14,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.cs3237_group_3.fall_detection_app.gateway.MqttClient;
 import com.cs3237_group_3.fall_detection_app.model.ConfigurationData;
 import com.cs3237_group_3.fall_detection_app.viewmodel.GlobalViewModel;
 
@@ -26,9 +27,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-//        MqttClient mqttClient = new MqttClient(getApplicationContext());
-        GlobalViewModel globalViewModel = new ViewModelProvider(this).get(GlobalViewModel.class);
-//        globalViewModel.initBleServices(
+        GlobalViewModel viewModel = new ViewModelProvider(this).get(GlobalViewModel.class);
+        //        globalViewModel.initBleServices(
 //                (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE),
 //                getApplicationContext());
 //        final Observer<ConfigurationData> configObserver = config -> {

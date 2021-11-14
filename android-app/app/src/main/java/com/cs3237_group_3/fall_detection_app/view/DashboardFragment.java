@@ -53,12 +53,14 @@ public class DashboardFragment extends Fragment
     }
 
     @Override
-    public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull @NotNull View view,
+                              @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         viewModel = new ViewModelProvider(this).get(GlobalViewModel.class);
         viewModel.initBleServices(
                 (BluetoothManager) getActivity().getSystemService(Context.BLUETOOTH_SERVICE),
                 getContext());
+        viewModel.initMqttService(getActivity().getApplicationContext());
         bleManager = viewModel.getBleManager();
         initObservers();
 
@@ -110,6 +112,17 @@ public class DashboardFragment extends Fragment
         };
         bleManager.getWaistConnStatusLiveData().observe(getViewLifecycleOwner(),
                 waistTagConnStatusObserver);
+
+        final Observer<Boolean> mqttConnStatusObserver = mqttConnRes -> {
+            if (mqttConnRes == null) {
+                Log.e(TAG, "mqttConnRes is null");
+                return;
+            }
+            setConnRes(serverConnCard, serverConnTv, serverLiv, mqttConnRes);
+        };
+        viewModel.getMqttConnLiveData().observe(getViewLifecycleOwner(),
+                mqttConnStatusObserver);
+
     }
 
     private void setConnRes(MaterialCardView card, TextView tv,
@@ -142,6 +155,7 @@ public class DashboardFragment extends Fragment
             bleManager.refreshConnectionForWaistTag();
         } else if (v.getId() == R.id.refreshServerConnBtn) {
             showLoading(serverConnCard, serverConnTv, serverLiv);
+            viewModel.initMqttService(getActivity().getApplicationContext());
         }
     }
 
