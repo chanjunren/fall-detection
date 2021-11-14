@@ -3,6 +3,8 @@ package com.cs3237_group_3.fall_detection_app.gateway;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
+import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.BluetoothLeScanner;
@@ -11,16 +13,24 @@ import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.content.Context;
+import android.content.Intent;
 import android.os.ParcelUuid;
 import android.util.Log;
 
 import androidx.lifecycle.MutableLiveData;
 
+import java.util.List;
+import java.util.UUID;
+
+import static com.cs3237_group_3.fall_detection_app.util.Utilities.BATT_SERVICE_UUID;
+import static com.cs3237_group_3.fall_detection_app.util.Utilities.CC2650_DATA_UUID;
 import static com.cs3237_group_3.fall_detection_app.util.Utilities.CC2650_DATA_UUID_STRING;
+import static com.cs3237_group_3.fall_detection_app.util.Utilities.CC2650_SERVICE_UUID;
+import static com.cs3237_group_3.fall_detection_app.util.Utilities.CC2650_SERV_UUID_STRING;
 
 public class BleManager {
     private final String TAG = "BleManager";
-
+    private Byte[] buffer;
     private Context context;
     private BluetoothLeScanner bleScanner;
 
@@ -113,6 +123,8 @@ public class BleManager {
             public void onScanFailed(int errorCode) {
                 super.onScanFailed(errorCode);
                 Log.e(TAG, "Error code while scanning: " + errorCode);
+                BluetoothManager manager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
+                manager.getAdapter().disable();
             }
         };
     }
@@ -168,11 +180,47 @@ public class BleManager {
                         // Store reference for BluetoothGatt
                         isWristSensorTagConnected.postValue(true);
                         wristGatt = gatt;
+                        wristGatt.discoverServices();
+//                        readCharacteristicFromUuid(wristGatt, CC2650_SERVICE_UUID, CC2650_DATA_UUID);
                     } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                         Log.i(TAG, "Succesfully disconnected from " +
                                 wristSensorTag.getAddress());
                         isWristSensorTagConnected.postValue(false);
                         wristGatt.close();
+                    }
+                }
+            }
+
+            @Override
+            public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+                super.onCharacteristicRead(gatt, characteristic, status);
+                if  (status == BluetoothGatt.GATT_SUCCESS) {
+                    broadcastUpdate(null, characteristic);
+                } else if (status == BluetoothGatt.GATT_READ_NOT_PERMITTED) {
+                    Log.e(TAG, String.format("Read not permitted for this uuid: !",
+                            characteristic.getUuid().toString()));
+                } else {
+                    Log.e(TAG, "Bluetooth read failed for " +
+                            characteristic.getUuid().toString());
+                }
+            }
+
+            @Override
+            public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+                super.onServicesDiscovered(gatt, status);
+//                for (BluetoothGattService s: gatt.getServices()) {
+//                    Log.i(TAG, s.toString());
+//                }
+//                readCharacteristicFromUuid(gatt, CC2650_SERVICE_UUID, CC2650_DATA_UUID);
+                for (BluetoothGattService service: gatt.getServices()) {
+                    if (service.getUuid().toString().equals(CC2650_SERV_UUID_STRING)) {
+                        Log.i(TAG, "Service UUID found!");
+                        for (BluetoothGattCharacteristic c: service.getCharacteristics()) {
+                            if (c.getUuid().toString().equals(CC2650_DATA_UUID_STRING)) {
+                                Log.i(TAG, "Characteristic UUID found!");
+                                gatt.readCharacteristic(c);
+                            }
+                        }
                     }
                 }
             }
@@ -190,6 +238,8 @@ public class BleManager {
                         // Store reference for BluetoothGatt
                         isWaistSensorTagConnected.postValue(true);
                         waistGatt = gatt;
+                        waistGatt.discoverServices();
+                        //                        readCharacteristicFromUuid(waistGatt, CC2650_SERVICE_UUID, CC2650_DATA_UUID);
                     } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                         Log.i(TAG, "Succesfully disconnected from " + waistSensorTag.getAddress());
                         isWaistSensorTagConnected.postValue(false);
@@ -198,6 +248,40 @@ public class BleManager {
                 } else {
                     Log.i(TAG, "Unsuccessful: status " + status);
                 }
+            }
+            @Override
+            public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+                super.onCharacteristicRead(gatt, characteristic, status);
+                if  (status == BluetoothGatt.GATT_SUCCESS) {
+                    broadcastUpdate(null, characteristic);
+                } else if (status == BluetoothGatt.GATT_READ_NOT_PERMITTED) {
+                    Log.e(TAG, String.format("Read not permitted for this uuid: !",
+                            characteristic.getUuid().toString()));
+                } else {
+                    Log.e(TAG, "Bluetooth read failed for " +
+                            characteristic.getUuid().toString());
+                }
+            }
+            @Override
+            public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+                super.onServicesDiscovered(gatt, status);
+                for (BluetoothGattService service: gatt.getServices()) {
+                    if (service.getUuid().toString().equals(CC2650_SERV_UUID_STRING)) {
+                        Log.i(TAG, "Service UUID found!");
+                        for (BluetoothGattCharacteristic c: service.getCharacteristics()) {
+                            if (c.getUuid().toString().equals(CC2650_DATA_UUID_STRING)) {
+                                Log.i(TAG, "Characteristic UUID found!");
+                                gatt.readCharacteristic(c);
+                            }
+                        }
+                    }
+                }
+//                for (BluetoothGattService s: gatt.getServices()) {
+//                    Log.i(TAG, "===== " + s.getUuid().toString() + " =====");
+//                    for (BluetoothGattCharacteristic c: s.getCharacteristics()) {
+//                        Log.i(TAG, "\tCharacteristic UUID: " + c.getUuid().toString());
+//                    }
+//                }
             }
         };
     }
@@ -218,14 +302,34 @@ public class BleManager {
         wristSensorTag.connectGatt(context, true, wristConnCallback);
     }
 
-//    private
-//
-//    public void readBatteryLevel() {
-//
-//    }
+    public void readCharacteristicFromUuid(BluetoothGatt gatt, UUID serviceUuid, UUID charUuid) {
+        Log.i(TAG, "Reading characteristic from UUID....");
+        if (gatt.getService(serviceUuid) == null) {
+            Log.e(TAG, "Service is null");
+        }
+        BluetoothGattCharacteristic characteristic =
+                gatt.getService(serviceUuid) != null
+                        ? gatt.getService(serviceUuid).getCharacteristic(charUuid)
+                        : null;
+        if (characteristic == null) {
+            Log.e(TAG, "Characteristic is null");
+        }
+        // Check for null
+        gatt.readCharacteristic(characteristic);
+    }
 
-    public void readCharacteristic() {
-//        BluetoothGattCharacteristic gattCharacteristic = new BluetoothGattCharacteristic();
-//        waistGatt.readCharacteristic(Blue)
+    private void broadcastUpdate(final String action,
+                                 final BluetoothGattCharacteristic characteristic) {
+        Log.i(TAG, "Broadcasting update....");
+        final Intent intent = new Intent(action);
+        // For all other profiles, writes the data formatted in HEX.
+        final byte[] data = characteristic.getValue();
+        if (data != null && data.length > 0) {
+            final StringBuilder stringBuilder = new StringBuilder(data.length);
+            for(byte byteChar : data)
+                stringBuilder.append(String.format("%02X ", byteChar));
+            Log.i(TAG, stringBuilder.toString());
+        }
+        context.sendBroadcast(intent);
     }
 }
