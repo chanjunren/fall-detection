@@ -69,10 +69,10 @@ def save(queue0_out, queue1_out, csv_name):
         while True:
             d0 = queue0_out.get(timeout=0.1)
             d1 = queue1_out.get(timeout=0.1)
-            rows0.append(d0)
-            rows1.append(d1)
             t0 = d0[0]
             t1 = d1[0]
+            rows0.append(d0)
+            rows1.append(d1)
             diff.append(t0-t1)
     except QueueEmpty:
         write0.writerows(rows0)
@@ -91,17 +91,17 @@ def main():
     waistAddress = ("54:6C:0E:53:35:E2", "DB6C6D52-CD50-45E4-9365-0F2A5697C96E")
 
     filename = sys.argv[1]
-    period = 20
-    time_s = 2
+    period = 30
+    time_s = 10
     n_timestampers = 2
     e = math.floor(1 + time_s * 1000 / (period * Mov.SENSOR_PERIOD_RESOLUTION))
 
     start_event = Event()
     sem = Semaphore(0)
-    queue0_in = Queue()
-    queue1_in = Queue()
-    queue0_out = Queue()
-    queue1_out = Queue()
+    queue0_in = Queue(e+20)
+    queue1_in = Queue(e+20)
+    queue0_out = Queue(e+20)
+    queue1_out = Queue(e+20)
     print(f"Saving to file: {filename}")
     print(f'Recording data for {time_s}s')
     print(f'Period={period*Mov.SENSOR_PERIOD_RESOLUTION}ms')
