@@ -33,6 +33,42 @@ async def collect_data(address, channel, period, time_s, start_event, sem, queue
         await imu.disable()
         await asyncio.sleep(1)
 
+def window_list(queue_in, queue_out, window_sz, stride, sem, start_event):
+    buffer = []
+    n = 0
+    sem.release()
+    start_event.wait()
+    try:
+        while True:
+            buffer.append(queue_in.get(timeout=2))
+            n+=1
+            if n == window_sz:
+                queue_out.put(buffer)
+                buffer=buffer[stride:]
+                n-=stride
+    except QueueEmpty:
+        return
+
+def process_window_q(queue_out, sem, start_event):
+    sem.release()
+    start_event.wait()
+    try:
+        while True:
+            print(len(queue_out.get(timeout=5)))
+    except QueueEmpty:
+        return
+
+def process_2_window_q(queue0_out, queue1_out, sem, start_event):
+    sem.release()
+    start_event.wait()
+    try:
+        while True:
+            w0 = queue0_out.get(timeout=5)
+            w1 = queue1_out.get(timeout=5)
+            print("do something with 2 windows @", time.time_ns()//1000000)
+    except QueueEmpty:
+        return
+
 def run(address, channel, period, time_s, start_event, sem, queue):
     return asyncio.run(collect_data(address, channel, period, time_s, start_event, sem, queue))
 
@@ -110,16 +146,42 @@ def main():
     processes = []
     processes.append(Process(target=run, args=(waistAddress, 0, period, time_s, start_event, sem, queue0_in)))
     processes.append(Process(target=run, args=(wristAddress, 1, period, time_s, start_event, sem, queue1_in)))
-    processes.extend([Process(target=timestamp_inputs, args=(queue0_in, queue0_out, sem, start_event, time_s)) for i in range(n_timestampers)])
-    processes.extend([Process(target=timestamp_inputs, args=(queue1_in, queue1_out, sem, start_event, time_s)) for i in range(n_timestampers)])
-    processes.append(Process(target=sync_start, args=(2+2*n_timestampers, start_event, sem)))
+
+
+    # ### timestamp processes take from queue and label w/ time stamps
+    # processes.extend([Process(target=timestamp_inputs, args=(queue0_in, queue0_out, sem, start_event, time_s)) for i in range(n_timestampers)])
+    # processes.extend([Process(target=timestamp_inputs, args=(queue1_in, queue1_out, sem, start_event, time_s)) for i in range(n_timestampers)])
+    # processes.append(Process(target=sync_start, args=(2+2*n_timestampers, start_event, sem)))
+    # for p in processes:
+    #     p.start()
+    # for p in processes:
+    #     p.join()
+    # print(f"Saving to file: {filename}")
+    # save(queue0_out, queue1_out, filename)
+
+
+    # #### window + processes window
+    # processes.append(Process(target=window_list, args=(queue0_in, queue0_out, 50, 10, sem, start_event)))
+    # processes.append(Process(target=window_list, args=(queue1_in, queue1_out, 50, 10, sem, start_event)))
+    # processes.append(Process(target=process_window_q, args=(queue0_out, sem, start_event)))
+    # processes.append(Process(target=process_window_q, args=(queue1_out, sem, start_event)))
+    # processes.append(Process(target=sync_start, args=(2+4, start_event, sem)))
+    # for p in processes:
+    #     p.start()
+    # for p in processes:
+    #     p.join()
+
+
+    ### window + processes pair of window
+    processes.append(Process(target=window_list, args=(queue0_in, queue0_out, 50, 10, sem, start_event)))
+    processes.append(Process(target=window_list, args=(queue1_in, queue1_out, 50, 5, sem, start_event)))
+    processes.append(Process(target=process_2_window_q, args=(queue0_out, queue1_out, sem, start_event)))
+    processes.append(Process(target=sync_start, args=(2+3, start_event, sem)))
     for p in processes:
         p.start()
     for p in processes:
         p.join()
 
-    print(f"Saving to file: {filename}")
-    save(queue0_out, queue1_out, filename)
 
 if __name__ == "__main__":
     main()
