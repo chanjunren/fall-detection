@@ -7,12 +7,6 @@ import queue
 import paho.mqtt.client as mqtt
 from bleak import BleakClient
 
-# Wrist channel 1
-# Waist channel 0
-
-idx = 0
-
-dataQueue = queue.Queue()
 class Mov:
     SERV_UUID = "F000AA80-0451-4000-B000-000000000000" # ?
     DATA_UUID = "F000AA81-0451-4000-B000-000000000000" # R N
@@ -26,8 +20,8 @@ class Mov:
     00 01000000  mag
     00 10000000  wom
     11 00000000  range
-
     '''
+
     AX_GYR = 0x07
     AX_ACL = 0x38
     EN_MAG = 0x40
@@ -44,6 +38,9 @@ class Mov:
         self.accRange = Mov.ACC_RANGE_2
         self.address = address
         self.channel = channel
+
+        self.idx = 0
+        self.dataQueue = queue.Queue()
         # self.mqtt_client = mqtt.Client()
         # self.mqtt_client.on_connect = self.on_connect
         # self.mqtt_client.username_pw_set("testuser1", "pass")
@@ -131,39 +128,28 @@ class Mov:
         gyr = self.convertGyr(gyr[0]), self.convertGyr(gyr[1]), self.convertGyr(gyr[2])
         # mag = self.convertMag(mag[0]), self.convertMag(mag[1]), self.convertMag(mag[2])
 
-        # global idx
-        # idx += 1
-        processed_data = [acc[0]] + [acc[1]] + [acc[2]] + [gyr[0]] + [gyr[1]] + [gyr[2]]
+        self.idx += 1
+        processed_data = [[time.time_ns()] + [acc[0]] + [acc[1]] + [acc[2]] + [gyr[0]] + [gyr[1]] + [gyr[2]]]
         # ar = array.array('d', [acc[0], acc[1], acc[2], gyr[0], gyr[1], gyr[2]])
-        dataQueue.put(processed_data)
+        self.dataQueue.put(processed_data)
         # self.mqtt_client.publish(self.mqtt_topic, ar.tobytes())
-        # print('ACC x%7.3f y%7.3f z%7.3f | ' % acc, end='')
-        # print('GYR x%7.3f y%7.3f z%7.3f | ' % gyr)
-        # print('MAG x%7.3f y%7.3f z%7.3f   ' % mag)
         return mag, acc, gyr
 
-    def current_milli_time():
-        return round(time.time() * 1000)
-
     def save_to_csv(self, csv_name):
-        # wristDataList = [a + b[1::] for a, b in zip(list(wristAccelDataQueue.queue), list(wristGyroDataQueue.queue))]
         fields = ['Timestamp', 'ax', 'ay', 'az', 'gx', 'gy', 'gz']
         filename = f'{csv_name}' + '.csv'
         with open(filename, 'a', newline='') as f:
             write = csv.writer(f)
             write.writerow(fields)
-            write.writerows(list(dataQueue.queue))
+            write.writerows(list(self.dataQueue.queue))
             f.close()
 
     async def subscribe(self):
         await self.client.start_notify(Mov.DATA_UUID, self.handle_movement_notif)
 
-
     async def unsubscribe(self):
-        print("Got: " , idx)
+        print("Got: " , self.idx)
         await self.client.stop_notify(Mov.DATA_UUID)
 
 if __name__ == "__main__":
     pass
-
-    #m.configure(True, True, False, False, Mov.ACC_RANGE_4)
