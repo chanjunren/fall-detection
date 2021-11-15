@@ -161,8 +161,10 @@ def main():
 
 
     # #### window + processes window
-    # processes.append(Process(target=window_list, args=(queue0_in, queue0_out, 50, 10, sem, start_event)))
-    # processes.append(Process(target=window_list, args=(queue1_in, queue1_out, 50, 10, sem, start_event)))
+    # window_len = 50
+    # stride_len = 5
+    # processes.append(Process(target=window_list, args=(queue0_in, queue0_out, window_len, stride_len, sem, start_event)))
+    # processes.append(Process(target=window_list, args=(queue1_in, queue1_out, window_len, stride_len, sem, start_event)))
     # processes.append(Process(target=process_window_q, args=(queue0_out, sem, start_event)))
     # processes.append(Process(target=process_window_q, args=(queue1_out, sem, start_event)))
     # processes.append(Process(target=sync_start, args=(2+4, start_event, sem)))
@@ -171,10 +173,11 @@ def main():
     # for p in processes:
     #     p.join()
 
-
     ### window + processes pair of window
-    processes.append(Process(target=window_list, args=(queue0_in, queue0_out, 50, 10, sem, start_event)))
-    processes.append(Process(target=window_list, args=(queue1_in, queue1_out, 50, 5, sem, start_event)))
+    window_len = 50
+    stride_len = 5
+    processes.append(Process(target=window_list, args=(queue0_in, queue0_out, window_len, stride_len, sem, start_event)))
+    processes.append(Process(target=window_list, args=(queue1_in, queue1_out, window_len, stride_len, sem, start_event)))
     processes.append(Process(target=process_2_window_q, args=(queue0_out, queue1_out, sem, start_event)))
     processes.append(Process(target=sync_start, args=(2+3, start_event, sem)))
     for p in processes:
