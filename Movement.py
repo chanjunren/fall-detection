@@ -33,14 +33,13 @@ class Mov:
     SENSOR_MIN_UPDATE_PERIOD = 10
     SENSOR_PERIOD_RESOLUTION = 1
 
-    def __init__(self, client:BleakClient, address, channel):
+    def __init__(self, client:BleakClient, address, channel, queue):
         self.client = client
         self.accRange = Mov.ACC_RANGE_2
         self.address = address
         self.channel = channel
-
+        self.dataQueue = queue
         self.idx = 0
-        self.dataQueue = queue.Queue()
         # self.mqtt_client = mqtt.Client()
         # self.mqtt_client.on_connect = self.on_connect
         # self.mqtt_client.username_pw_set("testuser1", "pass")
@@ -117,39 +116,26 @@ class Mov:
         return p >= Mov.SENSOR_MIN_UPDATE_PERIOD // Mov.SENSOR_PERIOD_RESOLUTION
 
     def handle_movement_notif(self, sender:int, data:bytearray):
-        # curr_time = round(time.time() * 1000)
         u = struct.unpack('9h', data)
 
         gyr = (u[0], u[1], u[2])
         acc = (u[3], u[4], u[5])
-        mag = (u[6], u[7], u[8])
 
         acc = self.convertAcc(acc[0]), self.convertAcc(acc[1]), self.convertAcc(acc[2])
         gyr = self.convertGyr(gyr[0]), self.convertGyr(gyr[1]), self.convertGyr(gyr[2])
-        # mag = self.convertMag(mag[0]), self.convertMag(mag[1]), self.convertMag(mag[2])
 
         self.idx += 1
-        processed_data = [[time.time_ns()] + [acc[0]] + [acc[1]] + [acc[2]] + [gyr[0]] + [gyr[1]] + [gyr[2]]]
-        # ar = array.array('d', [acc[0], acc[1], acc[2], gyr[0], gyr[1], gyr[2]])
-        self.dataQueue.put(processed_data)
-        # self.mqtt_client.publish(self.mqtt_topic, ar.tobytes())
-        return mag, acc, gyr
+        self.dataQueue.put([acc[0], acc[1] , acc[2], gyr[0], gyr[1], gyr[2]])
 
-    def save_to_csv(self, csv_name):
-        fields = ['Timestamp', 'ax', 'ay', 'az', 'gx', 'gy', 'gz']
-        filename = f'{csv_name}' + '.csv'
-        with open(filename, 'a', newline='') as f:
-            write = csv.writer(f)
-            write.writerow(fields)
-            write.writerows(list(self.dataQueue.queue))
-            f.close()
 
     async def subscribe(self):
         await self.client.start_notify(Mov.DATA_UUID, self.handle_movement_notif)
 
     async def unsubscribe(self):
-        print("Got: " , self.idx)
         await self.client.stop_notify(Mov.DATA_UUID)
+        print("Got: " , self.idx)
+        self.idx = 0
+
 
 if __name__ == "__main__":
     pass
