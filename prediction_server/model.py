@@ -5,301 +5,213 @@
 # exit()
 import matplotlib.pyplot as plt
 import numpy as np
-from h5py import is_hdf5
+import os
 from abc import ABC, abstractmethod
 from os.path import exists as path_exists
 from tensorflow.keras import layers
-from tensorflow.keras.models import load_model, Sequential
+from tensorflow.keras.models import load_model as k_load_model
+from tensorflow.keras.models import Sequential
 from tensorflow.keras.callbacks import EarlyStopping
-from tensorflow.math import confusion_matrix
 from sklearn.preprocessing import LabelBinarizer
-from parameters import INPUT_SHAPE, TIME_STEPS, N_FEATURES
+from parameters import TIME_STEPS, TAG_PERIOD, WINDOW_SZ, WEIGHTS_BASE_PATH
 
-class Classifier(ABC):
-    @classmethod
-    @abstractmethod
-    def N_CLASSES(cls):
-        pass
+# TIME_STEPS == 66
 
-    @classmethod
-    @abstractmethod
-    def CLASSES(cls):
-        pass
+def multi_f_c(f, c):
+    assert c > 3
+    return [
+        layers.LSTM(64, input_shape=(TIME_STEPS, f)),
+        layers.Dropout(.5),
+        layers.Dense(units=24, activation='relu'),
+        layers.Dense(units=c, activation='softmax'),
+    ]
 
-    @classmethod
-    @abstractmethod
-    def get_and_compile_fresh_model(cls):
-        pass
+def binary_f_c(f, c):
+    assert c in [1,2]
+    return [
+        layers.LSTM(128, input_shape=(TIME_STEPS, f)),
+        layers.Dropout(.5),
+        layers.Dense(units=64, activation='relu'),
+        layers.Dense(units=1, activation='sigmoid'),
+    ]
 
-    @classmethod
-    @abstractmethod
-    def decode_prediction(cls, y_pred, threshold=.5, tostring=True):
-        pass
-
-    @classmethod
-    @abstractmethod
-    def encode_target(cls, y_target):
-        pass
-
-    def __init__(self, src_path=None):
-        self.src_path = src_path
-        if src_path and is_hdf5(src_path):
-            print(f'Loading [{self.__class__.__name__}]model from [{src_path}].')
-            self.model = load_model(src_path)
-        else:
-            print(f'Initializing untrained [{self.__class__.__name__}]model.')
-            self.model = self.__class__.get_and_compile_fresh_model()
-
-    def predict(self, x):
-        if x.ndim == 2:
-           x = np.expand_dims(x, 0)
-        assert x.ndim == 3
-        return self.model.predict(x)
-
-    @staticmethod
-    def plot_training_progress(hist, verbose=1):
-        if verbose>0:
-            print(
-                '',
-                '----------------------------',
-                'Displaying Training Progress',
-                '* Press ANY key to continue.',
-                '----------------------------',
-                sep='\n'
-                )
-        fig = plt.figure()
-        fig.suptitle('Progress')
-        f1 = fig.add_subplot(2, 1, 1, xlabel='epoch', ylabel='loss')
-        f2 = fig.add_subplot(2, 1, 2, xlabel='epoch', ylabel='accuracy')
-        f1.plot(np.array(hist.history['loss']), 'r-', label='train')
-        f1.plot(np.array(hist.history['val_loss']), 'r--', label='val')
-        f2.plot(np.array(hist.history['accuracy']), 'g-', label='train')
-        f2.plot(np.array(hist.history['val_accuracy']), 'g--', label='val')
-        f1.legend(loc='upper left')
-        f2.legend(loc='upper left')
-        fig.show()
-        plt.waitforbuttonpress()
-
-    def save(self, dst_path, overwrite, verbose=1):
-        if not dst_path:
-            dst_path = self.src_path
-
-        if verbose>0:
-            print(
-                '',
-                '----------------',
-                f"Saving Model to '{dst_path}'",
-                '----------------',
-                sep='\n'
-                )
-
-        if overwrite=='error' and path_exists(dst_path):
-            raise FileExistsError(dst_path)
-        elif overwrite=='prompt':
-            self.model.save(dst_path, overwrite=False, save_format='h5')
-        elif overwrite=='overwrite':
-            self.model.save(dst_path, overwrite=True, save_format='h5')
-        else:
-            raise ValueError("overwrite must be 'overwrite', 'prompt', or 'error'!")
-
-    def train(
-        self, x, y, n_epochs, batch_sz, early_stop=False,
-        display_graph=False,
-        save=True, dst_path=None, overwrite='prompt',
-        verbose=1
-        ):
-        y_targ = y['test'].copy()
-        for split in y:
-            y[split] = self.encode_target(y[split])
-
-        fit_callbacks = []
-        if early_stop:
-            fit_callbacks.append(EarlyStopping(monitor='val_loss', patience=2, mode='min'))
-
-        if verbose > 0:
-            print(
-                '',
-                '----------------',
-                'Training Model',
-                '----------------',
-                sep='\n'
-                )
-        hist = self.model.fit(
-                    x['train'],
-                    y['train'],
-                    epochs=n_epochs,
-                    validation_data=(x['val'], y['val']),
-                    batch_size=batch_sz,
-                    verbose=verbose,
-                    callbacks=fit_callbacks,
-                    )
-
-        loss = None
-        accuracy = None
-        if 'test' in x and 'test' in y:
-            if verbose > 0:
-                print(
-                    '',
-                    '----------------',
-                    'Evaluating Model',
-                    '----------------',
-                    sep='\n'
-                    )
-            loss, accuracy = self.model.evaluate(x['test'], y['test'], batch_size=batch_sz, verbose=verbose)
-
-            if isinstance(self, MultiClassifier):
-                y_pred = self.model.predict(x['test'])
-                y_pred = self.decode_prediction(y_pred, threshold=0, tostring=False)
-                conf_mat = confusion_matrix(y_targ, y_pred)
-                if verbose > 0:
-                    print(
-                        '',
-                        'Confusion Matrix',
-                        self.CLASSES_INV().keys(),
-                        conf_mat,
-                        sep='\n'
-                    )
-
-        if display_graph:
-            Classifier.plot_training_progress(hist, verbose=verbose)
-
-        if save:
-            self.save(dst_path, overwrite, verbose=verbose)
-
-        return hist, loss, accuracy
-
-class BinaryClassifier(Classifier):
-    @classmethod
-    def CLASSES(cls):
-        return {0: 'not_fall', 1: 'fall'}
-
-    @classmethod
-    def CLASSES_INV(cls):
-        # example classes
-        return {'not_fall':0, 'fall':1}
-
-    @classmethod
-    def N_CLASSES(cls):
-        return 2
-
-    @classmethod
-    def get_and_compile_fresh_model(cls):
-        model = Sequential([
-            layers.LSTM(128, input_shape=INPUT_SHAPE),
-            layers.Dropout(.5),
-            layers.Dense(units=64, activation='relu'),
-            layers.Dense(units=1, activation='sigmoid'),
-        ])
+def compile(model, binary):
+    if binary:
         model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-        return model
+    else:
+        model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+    return model
 
-    @classmethod
-    def decode_prediction(cls, y_pred, threshold=.5, tostring=True):
-        if tostring:
-            return np.where(y_pred > threshold, cls.CLASSES()[1], cls.CLASSES()[0])
-        else:
-            return np.where(y_pred > threshold, 1 , 0)
+def get_model(name, features, classes, is_binary):
+    if name == 'model_multi':
+        f = len(features)
+        c = len(classes)
+        return Sequential(multi_f_c(f,c), name=f'{name}_{f}_{c}')
 
-    @classmethod
-    def encode_target(_, y_target):
-        return y_target
+    elif name == 'model_binary':
+        f = len(features)
+        c = len(classes)
+        return Sequential(binary_f_c(f,c), name=f'{name}_{f}_{1}')
 
-class MultiClassifier(Classifier):
-    @classmethod
-    def CLASSES(cls):
-        # example classes
-        return {0: 'walk', 1: 'upstairs', 2: 'downstairs', 3: 'stationary', 4:'sit', -1:'unknown'}
+    else:
+        raise Exception('name must be either model_binary or model_multi')
 
-    @classmethod
-    def CLASSES_INV(cls):
-        # example classes
-        return {'walk':0, 'upstairs':1, 'downstairs':2, 'stationary':3, 'sit':4, 'unknown':-1}
+def load_model(model, version):
+    src_path = os.path.join(WEIGHTS_BASE_PATH, f'{model.name}_v{version}.h5')
+    if path_exists(src_path):
+        print('load from', src_path)
+        return k_load_model(src_path)
+    else:
+        print('no saved model @', src_path)
+        return None
 
-    @classmethod
-    def N_CLASSES(cls):
-        return 5
+def save_model(model, version, overwrite=True):
+    dst_path = os.path.join(WEIGHTS_BASE_PATH, f'{model.name}_v{version}.h5')
+    print('save to', dst_path)
+    model.save(dst_path, overwrite=overwrite)
 
-    @classmethod
-    def get_and_compile_fresh_model(cls):
-        model = Sequential([
-            layers.LSTM(64, input_shape=INPUT_SHAPE),
-            layers.Dropout(.5),
-            layers.Dense(units=24, activation='relu'),
-            layers.Dense(units=cls.N_CLASSES(), activation='softmax'),
-        ])
-        model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-        return model
+def plot_training_progress(hist, verbose=1):
+    if verbose>0:
+        print(
+            '',
+            '----------------------------',
+            'Displaying Training Progress',
+            '* Press ANY key to continue.',
+            '----------------------------',
+            sep='\n'
+            )
+    fig = plt.figure()
+    fig.suptitle('Progress')
+    f1 = fig.add_subplot(2, 1, 1, xlabel='epoch', ylabel='loss')
+    f2 = fig.add_subplot(2, 1, 2, xlabel='epoch', ylabel='accuracy')
+    f1.plot(np.array(hist.history['loss']), 'r-', label='train')
+    f1.plot(np.array(hist.history['val_loss']), 'r--', label='val')
+    f2.plot(np.array(hist.history['accuracy']), 'g-', label='train')
+    f2.plot(np.array(hist.history['val_accuracy']), 'g--', label='val')
+    f1.legend(loc='upper left')
+    f2.legend(loc='upper left')
+    fig.show()
+    plt.waitforbuttonpress()
 
-        # DEEPER with LSTM instead of fully connected layer
-        # model = Sequential([
-        #     layers.LSTM(128, return_sequences=True, input_shape=INPUT_SHAPE),
-        #     layers.LSTM(64),
-        #     layers.Dropout(.5),
-        #     layers.Dense(units=32, activation='relu'),
-        #     layers.Dense(units=cls.N_CLASSES(), activation='softmax'),
-        # ])
-        # model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-        # return model
 
-    @classmethod
-    def decode_prediction(cls, y_pred, threshold=.5, tostring=True):
-        which_class = y_pred.argmax(1)
-        idx = np.unravel_index(which_class, y_pred.shape)
-        decision = np.where(y_pred[idx] > threshold, which_class, -1)
-        if tostring:
-            decision = list(map(lambda y: cls.CLASSES()[y], decision))
-        return decision
+def train(model, train_gen, val_gen, test_gen, n_epochs, batch_sz, early_stop, dst_version, verbose=True):
+    fit_callbacks = []
+    if early_stop:
+        fit_callbacks.append(EarlyStopping(monitor='val_loss', patience=2, mode='min'))
 
-    @classmethod
-    def encode_target(cls, y_target):
-        n_classes = cls.N_CLASSES()
-        assert n_classes > 2
+    print('\nTRAINING MODEL....\n')
+    hist = model.fit(
+                train_gen,
+                epochs=n_epochs,
+                validation_data=val_gen,
+                batch_size=batch_sz,
+                verbose=1 if verbose else 2,
+                callbacks=fit_callbacks,
+                )
 
+    loss, accuracy = None, None
+
+    if test_gen:
+        print('\nEVALUATING MODEL....\n')
+        loss, accuracy = model.evaluate(test_gen, batch_size=batch_sz, verbose=verbose)
+
+    if verbose:
+        plot_training_progress(hist)
+
+    if dst_version:
+        save_model(model, dst_version)
+
+    return hist, loss, accuracy
+
+
+def encode_label_to_target(y_label, classes, binary):
+    to_idx = {cls: i for i,cls in enumerate(classes)}
+    target = to_idx[y_label]
+
+    if not binary:
         enc = LabelBinarizer()
-        enc.fit(range(n_classes))
-        onehot = enc.transform(y_target)
-        return onehot
+        enc.fit(range(len(classes)))
+        target = enc.transform(target)
+
+    return target
+
+def decode_prediction_binary(prediction, threshold=.5, classes=None):
+    positive = classes[1] if classes else 1
+    negative = classes[0] if classes else 0
+    return np.where(prediction > threshold, positive , negative)
+
+def decode_prediction_multi(prediction, threshold=0, classes=None):
+    which_class = prediction.argmax(1)
+    idx = np.unravel_index(which_class, prediction.shape)
+    decision = np.where(prediction[idx] > threshold, which_class, -1)
+    if classes:
+        classes[-1] = 'unknown'
+        decision = list(map(lambda y: classes[y], decision))
+
+    return decision
+
+def get_binary_model(version, six=False):
+    classes=['not_falling', 'falling']
+
+    features=[
+        'waist_ax', 'waist_ay', 'waist_az', 'waist_gx', 'waist_gy', 'waist_gz',
+        'wrist_ax', 'wrist_ay', 'wrist_az', 'wrist_gx', 'wrist_gy', 'wrist_gz'
+    ]
+    if six:
+        features=[
+            'ax', 'ay', 'az', 'gx', 'gy', 'gz',
+        ]
+
+    model2 = get_model('model_binary', features, classes, True)
+    loaded = load_model(model2, version)
+
+    def transform_y(ys):
+        return list(map(lambda y: encode_label_to_target(y, classes, True), ys))
+
+    if loaded:
+        model2 = loaded
+    else:
+        compile(model2, True)
+
+    return model2, features, classes, transform_y
+
+def get_multi_model(version, six=False):
+    classes=['walking','stationary','climbing_up','climbing_down']
+    features=[
+        'waist_ax', 'waist_ay', 'waist_az', 'waist_gx', 'waist_gy', 'waist_gz',
+        'wrist_ax', 'wrist_ay', 'wrist_az', 'wrist_gx', 'wrist_gy', 'wrist_gz'
+    ]
+
+    if six:
+        features=[
+            'ax', 'ay', 'az', 'gx', 'gy', 'gz',
+        ]
+
+    model2 = get_model('model_multi', features, classes, False)
+    loaded = load_model(model2, version)
+
+    def transform_y(ys):
+        return list(map(lambda y: encode_label_to_target(y, classes, False), ys))
+
+    if loaded:
+        model2 = loaded
+    else:
+        compile(model2, False)
+
+    return model2, features, classes, transform_y
+
 
 if __name__ == "__main__":
-    class Fake:
-        '''
-        Generate fake data in required shape.
-        '''
-        def x_fake(n):
-            return np.random.uniform(-3, 3, (n, INPUT_SHAPE[0], INPUT_SHAPE[1]))
-
-        def y_fake(n, n_classes=1):
-            if n_classes in [1,2]:
-                return np.random.randint(0,2, (n,1))
-            assert n_classes > 2
-            return np.random.randint(0, n_classes, (n,1))
-
-        def __init__(self, n):
-            self.n = n
-
-        def get_x(self):
-            return {
-                'train': Fake.x_fake(10*self.n),
-                'test': Fake.x_fake(self.n),
-                'val': Fake.x_fake(self.n),
-            }
-
-        def get_y(self, n):
-            return {
-                'train': Fake.y_fake(10*self.n, n),
-                'test': Fake.y_fake(self.n, n),
-                'val': Fake.y_fake(self.n, n),
-            }
-
-
-    mo = MultiClassifier()
-    # fake_data_gen = Fake(20)
-    # n = mo.N_CLASSES()
-    # x = fake_data_gen.get_x()
-    # y = fake_data_gen.get_y(n)
-
-    from data import to_data_set
     import sys
-    x,y = to_data_set()
-    print(x,y)
-    mo.train(x, y, 3, 10, display_graph=True, dst_path=sys.argv[1], overwrite='overwrite', verbose=1)
+    sys.path.append('../data_collection')
+    import dataset
+
+    version = 1
+    model, features, classes, transform_y = get_binary_model(version)
+    model, features, classes, transform_y = get_multi_model(version)
+
+    meta = dataset.dataset_meta(period=TAG_PERIOD, window=WINDOW_SZ//2, stride=1, train=.6, val=.4, test=0, wrist=True, waist=True)
+    train_gen = dataset.DataGen(dataset_meta=meta, part='train', transform_y=transform_y)
+    val_gen  = dataset.DataGen(dataset_meta=meta, part='val', transform_y=transform_y)
+    test_gen = None
+    train(model, train_gen, val_gen, val_gen, 10, 10, True, version+2)
