@@ -2,12 +2,12 @@ import pandas as pd
 import numpy as np
 import os
 from parameters import DATA_BASE_PATH, META_CSV_HEADERS, COMB_CSV_HEADERS, MANIFEST_CSV_HEADERS
-from parameters import WINDOW_SZ, PERIOD
+from parameters import WINDOW_SZ, TAG_PERIOD
 from tensorflow.keras import utils
+from scipy.stats import mode
 
-def dataset_meta(period=30, window=WINDOW_SZ, stride=1, train=.6, val=.2, test=.2, wrist=True, waist=True):
-    BASE_PATH = os.path.join(DATA_BASE_PATH, 'processed', 'all')
-
+def dataset_meta(dataset, period=TAG_PERIOD, window=WINDOW_SZ//2, stride=1, train=.6, val=.4, test=0, wrist=True, waist=True):
+    BASE_PATH = os.path.join(DATA_BASE_PATH, 'processed', dataset)
     manifest = os.path.join(BASE_PATH, 'manifest.csv')
     manifest = pd.read_csv(manifest, index_col=[0])
     manifest = manifest[manifest.period==period] #only use same period
@@ -61,8 +61,8 @@ def dataset_meta(period=30, window=WINDOW_SZ, stride=1, train=.6, val=.2, test=.
             train_end = int(train*n_samples[file])
             if (train_end-train_start < window):
                 print(f'{file} not included. Not enough samples for training set')
-                continue
-            partition['train'].append((file, train_end-train_start, train_start, train_end))
+            else:
+                partition['train'].append((file, train_end-train_start, train_start, train_end))
 
 
         if val > 0:
@@ -70,8 +70,8 @@ def dataset_meta(period=30, window=WINDOW_SZ, stride=1, train=.6, val=.2, test=.
             val_end = val_start + int(val*n_samples[file])
             if (val_end-val_start < window):
                 print(f'{file} not included. Not enough samples for validation set')
-                continue
-            partition['val'].append((file, val_end-val_start, val_start, val_end))
+            else:
+                partition['val'].append((file, val_end-val_start, val_start, val_end))
 
 
         if test > 0:
@@ -79,8 +79,8 @@ def dataset_meta(period=30, window=WINDOW_SZ, stride=1, train=.6, val=.2, test=.
             test_end = int(n_samples[file])
             if (test_end-test_start < window):
                 print(f'{file} not included. Not enough samples for test set')
-                continue
-            partition['test'].append((file, test_end-test_start, test_start, test_end))
+            else:
+                partition['test'].append((file, test_end-test_start, test_start, test_end))
 
         for part in partition:
             for (file, n, start, end) in partition[part]:
@@ -88,8 +88,7 @@ def dataset_meta(period=30, window=WINDOW_SZ, stride=1, train=.6, val=.2, test=.
                 df = pd.read_csv(path, index_col=[0]).reset_index(drop=True)
 
                 for i in range(start, end-window, stride):
-                    label = df['label'][i:i+window].mode()[0]
-
+                    label = mode(df['label'].to_numpy()[i:i+window]).mode[0]#[i:i+window]#['label']
                     if label not in meta['classes']:
                         meta['classes'][label] = 0
                         meta['train']['classes'][label] = 0
@@ -110,26 +109,32 @@ def df_dict_from_meta(meta):
     }
 
 class DataGen(utils.Sequence):
-    def __init__(self, batch_size=1, input_shape=(10, 12), shuffle=True, part='train', copy=False, period=30, stride=2, split_ratio=(.6,.2,.2), seed=123):
-        assert input_shape[1] == 12
+    def __init__(self, batch_size=1, shuffle=True, part='train', dataset_meta=None, copy=False, seed=123, transform_x=None, transform_y=None):
         self.rng = np.random.default_rng(seed)
-        self.meta = dataset_meta(period=period, window=input_shape[0], stride=stride, train=split_ratio[0], val=split_ratio[1], test=split_ratio[2], wrist=True, waist=True)
-        self.df = df_dict_from_meta(self.meta)
-        self.copy = copy
-        self.manifest = self.meta[part]['manifest']
+        self.manifest = dataset_meta[part]['manifest']
         self.n = len(self.manifest)
+        self.df = df_dict_from_meta(dataset_meta)
+        self.meta = dataset_meta
+        self.copy = copy
         self.batch_size = batch_size
         self.shuffle = shuffle
+        self.transform_x = transform_x
+        self.transform_y = transform_y
 
     def on_epoch_end(self):
         self.rng.shuffle(self.manifest)
 
     def __getitem__(self, index):
         to_get = self.manifest[index:index+self.batch_size]
-        y = map(lambda tg: tg[2], to_get)
-        x = map(lambda tg: self.df[tg[0]][tg[1]:tg[1]+self.meta['window']].to_numpy(), to_get)
+        y = list(map(lambda tg: tg[2], to_get))
+        x = list(map(lambda tg: self.df[tg[0]][tg[1]:tg[1]+self.meta['window']].to_numpy(), to_get))
         if self.copy:
-            x = map(lambda z: z.copy(), x)
+            x = list(map(lambda z: z.copy(), x))
+        if self.transform_x:
+            x = self.transform_x(x)
+        if self.transform_y:
+            y = self.transform_y(y)
+
         return np.array(list(x)), np.array(list(y))
 
     def __len__(self):
@@ -137,11 +142,16 @@ class DataGen(utils.Sequence):
 
 
 if __name__ == "__main__":
-    meta = dataset_meta()
-    # print('n_train', len(meta['train']))
-    # print('n_val', len(meta['val']))
-    # print('n_test', len(meta['test']))
-    # print('classes', meta['classes'])
-    # print('classes train', meta['train']['classes'])
-    # print('classes val', meta['val']['classes'])
-    # print('classes test', meta['test']['classes'])
+    for d in ['HAR', 'falldet']:
+        meta = dataset_meta(d, period=TAG_PERIOD, window=WINDOW_SZ, stride=5, train=.7 , val=.15, test=.15, wrist=True, waist=True)
+        # print("falldet")
+        # meta = dataset_meta("falldet", period=TAG_PERIOD, window=WINDOW_SZ//2, stride=1, train=.6, val=.4, test=0, wrist=True, waist=True)
+        print('n_train', len(meta['train']))
+        print('n_val', len(meta['val']))
+        print('n_test', len(meta['test']))
+        print('classes', meta['classes'])
+        print('classes train', meta['train']['classes'])
+        print('classes val', meta['val']['classes'])
+        print('classes test', meta['test']['classes'])
+        # DataGen(dataset_meta=meta, part='train')
+        # DataGen(dataset_meta=meta, part='val')

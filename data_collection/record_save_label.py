@@ -1,4 +1,5 @@
 from multiprocessing import Process, Event, Semaphore, Queue, current_process
+from multiprocessing import Manager
 from queue import Empty as QueueEmpty
 from bleak import BleakClient
 
@@ -91,7 +92,8 @@ def webcam(start_event, sem, queue, time_s, ret_queue):
         while((curr - start)/1000000000 < time_s):
             _, frame = cam.read()
             curr = time.time_ns()
-            queue.put((curr, frame))
+            small = cv2.resize(frame, (frame.shape[1]//2, frame.shape[0]//2))
+            queue.put((curr, small))
 
     except Exception as e:
         print(e)
@@ -181,13 +183,13 @@ def record_save(filename, period, time_s):
 
     start_event = Event()
     sem = Semaphore(0)
-    queue0_in = Queue(e+20)
-    queue1_in = Queue(e+20)
-    queue0_out = Queue(e+20)
-    queue1_out = Queue(e+20)
-    webcam_queue = Queue()
-    label_queue = Queue()
-    ret_queue = Queue()
+    queue0_in = Manager().Queue(e+20)
+    queue1_in = Manager().Queue(e+20)
+    queue0_out = Manager().Queue(e+20)
+    queue1_out = Manager().Queue(e+20)
+    webcam_queue = Manager().Queue()
+    label_queue = Manager().Queue()
+    ret_queue = Manager().Queue()
 
     processes = []
     # enable both tags
@@ -281,7 +283,7 @@ def annotate_img(img, label=None, pos=None, scrub=None, help=False, n_classes=1)
     img2 = cv2.putText(img2, scrub, (x,y), cv2.FONT_HERSHEY_SIMPLEX, 1, blue, 5)
     img2 = cv2.putText(img2, scrub, (x,y), cv2.FONT_HERSHEY_SIMPLEX, 1, white, 2)
 
-    return img
+    return img, img2
 
 def label_only(filename):
     import glob
@@ -305,9 +307,9 @@ def label_only(filename):
     labelling = True
     scrub_sz = 1
 
-    df = pd.read_csv(LABEL_PATH)
-    start = df['timestamp(ns)'][0]
-    end = df['timestamp(ns)'][n_frames-1]
+    df = pd.read_csv(LABEL_PATH, index_col=[0])
+    start = df.index[0]
+    end = df.index[n_frames-1]
     dur = int(end-start)
     time_tmp = datetime.datetime.combine(datetime.date.min, datetime.time.min)
     total = (time_tmp + datetime.timedelta(microseconds=dur//1000)).strftime("%M:%S.%f")[:-3]
@@ -319,10 +321,12 @@ def label_only(filename):
 
     while labelling:
 
-            curr = df['timestamp(ns)'][pos]
+            curr = df.index[pos]
             now = (time_tmp + datetime.timedelta(microseconds=int(curr-start)//1000)).strftime("%M:%S.%f")[:-3]
-            label = df['label'][pos]
-            ann_img = annotate_img(
+
+            label = df.iloc[pos]['label']
+
+            ann_img, ann_img_2 = annotate_img(
                 cv2.imread(paths[pos]),
                 label= '' if label==LABEL_NONE else label,
                 pos=(pos+1, n_frames, now, total),
@@ -331,11 +335,11 @@ def label_only(filename):
                 n_classes=len(IDS)-2
                 )
 
-            cv2.imshow('label', ann_img)
-            cv2.imwrite(os.path.join(ANN_PATH, f'{pos}.png'), ann_img)
+            cv2.imshow('label', ann_img_2)
 
             k = cv2.waitKey(0) & 0xff
-
+            old_pos = pos
+            old_ss = scrub_sz
             if k == 2: # left arrow
                 pos = max(0, pos-scrub_sz)
                 help=False
@@ -350,21 +354,35 @@ def label_only(filename):
                 help=False
             elif k in which:
                 label = which[k]
-                df.at[pos, 'label'] = label
+                df.iloc[pos]['label'] = label
+                assert df.iloc[pos]['label'] == label
+                pos = min(n_frames-1, pos+scrub_sz)
                 help=False
             elif k in [ord('q'), 27]: #escape
                 labelling = False
                 help = not help
-                break
             else:
                 help = not help
+
+            label = df.iloc[old_pos]['label']
+            ann_img, _ = annotate_img(
+                cv2.imread(paths[old_pos]),
+                label= '' if label==LABEL_NONE else label,
+                pos=(old_pos+1, n_frames, now, total),
+                scrub=scrub_sz,
+                help=help or label==LABEL_NONE,
+                n_classes=len(IDS)-2
+                )
+
+            cv2.imwrite(os.path.join(ANN_PATH, os.path.basename(paths[old_pos])), ann_img)
+
 
     df.to_csv(LABEL_PATH)
 
 def main():
     filename = sys.argv[1]
     try:
-        record_save(filename, TAG_PERIOD, 5) # period, time_s
+        record_save(filename, TAG_PERIOD, 30) # period, time_s
     except FileExistsError as e:
         print(filename, 'recorded before')
     label_only(filename)

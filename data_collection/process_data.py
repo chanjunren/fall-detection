@@ -1,17 +1,17 @@
 import pandas as pd
 import os
 
-from fall_detection.parameters import DATA_BASE_PATH, META_CSV_HEADERS, COMB_CSV_HEADERS, MANIFEST_CSV_HEADERS
+from parameters import DATA_BASE_PATH, META_CSV_HEADERS, COMB_CSV_HEADERS, MANIFEST_CSV_HEADERS
 
-def combine(filename, verbose=False):
+def combine(filename, dataset, verbose=False):
     FOLDER_PATH_IN = os.path.join(DATA_BASE_PATH, 'unprocessed', filename)
-    FOLDER_PATH_OUT = os.path.join(DATA_BASE_PATH, 'processed', 'all')
+    FOLDER_PATH_OUT = os.path.join(DATA_BASE_PATH, 'processed', dataset)
 
     if not os.path.exists(os.path.join(FOLDER_PATH_OUT, filename)):
         os.makedirs(os.path.join(FOLDER_PATH_OUT, filename))
 
     if not os.path.exists(FOLDER_PATH_IN):
-        raise FileExistsError(f'Please specify valid input directory name')
+        raise FileExistsError('Please specify valid input directory name')
 
     WAIST_IN_PATH = os.path.join(FOLDER_PATH_IN, 'waist.csv')
     WRIST_IN_PATH = os.path.join(FOLDER_PATH_IN, 'wrist.csv')
@@ -95,9 +95,11 @@ def combine(filename, verbose=False):
 
     if verbose: print()
     if verbose: print(4, "DROP NAN")
-    df_comb = df_comb[COMB_CSV_HEADERS].dropna().set_index('timestamp(ns)')
+    df_comb = df_comb[COMB_CSV_HEADERS].dropna()
+    df_comb = df_comb.set_index('timestamp(ns)')
     df_wa_alone = df_wa_alone.dropna().set_index('timestamp(ns)')
     df_wr_alone = df_wr_alone.dropna().set_index('timestamp(ns)')
+
     if verbose: print('- combined', df_comb.shape)
     if verbose: print('- waist only', df_wa_alone.shape)
     if verbose: print('- wrist only', df_wr_alone.shape)
@@ -131,17 +133,32 @@ def combine(filename, verbose=False):
     df_mn = df_mn[~df_mn.index.duplicated(keep='last')]
     df_mn.to_csv(MANIFEST_PATH)
 
-def main():
-    FOLDER_PATH_IN = os.path.join(DATA_BASE_PATH, 'unprocessed')
+def main(files, dataset):
     first = True
-    files = os.listdir(FOLDER_PATH_IN)
-    files = list(files)
-
     for i, file in enumerate(files):
         try:
-            combine(file, i == len(files)-1)
+            combine(file, dataset, True)
         except Exception as e:
             print(e)
 
 if __name__ == "__main__":
-    main()
+
+    HAR_files = [
+        'stairs_brian_1',
+        'stairs_brian_2',
+        'stairs_brian_3',
+        'walk_stand_brian_1', # long stand followed by walkings
+        'walk_stand_brian_2', # walk followed by long standing in 1 spot
+        'walk_stand_brian_3'  # walk, stop, walk, stop
+    ] # walking, stationary, etc
+    if HAR_files:
+        HAR_dataet = 'HAR'
+        main(HAR_files, HAR_dataet)
+
+    FD_files = [
+        'falling_brian_2',
+        'falling_brian_3'
+    ]
+    if FD_files:
+        FD_dataset = 'falldet'
+        main(FD_files, FD_dataset)

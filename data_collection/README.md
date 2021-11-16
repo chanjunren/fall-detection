@@ -19,10 +19,15 @@ Afterwards, a cv2 window will open showing the various frames captured during th
 - 3 : climbing_up
 - 4 : climbing_down
 - 5 : falling
+- 6 : not_falling
+
+* falling/not_falling should not be used along with walking/stationary/etc
 
 ## PROCESSING DATA
 
-run `process_data.py` which will merge the waist/wrist data into one dataframe
+- modify the `HAR_files`, and  `FD_files` variables in the `proces_data.py` to include the list of relevant files
+- run `process_data.py` which will merge the waist/wrist data into one dataframe
+- combined csv files will appear in the `HAR` and `falldet` subdirectories of the dataset directory
 
 ## DATASET METRICS
 
@@ -32,6 +37,5 @@ run `dataset.py` after setting the various parameters
 - stride
 
 the program should print the class distributions, and size of each partition (train/val/splits)
-
 
 ###
