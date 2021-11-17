@@ -22,30 +22,35 @@ def decode_mqtt_payload2(payload):
     request_id = data['request_id']
     y = {
         'label': data['label'],
-        'conf': data['conf']
+        'raw_pred': data['raw_pred']
     }
     return request_id, y
 
+def print_response(rq_id, y):
+    print(rq_id, y['label'], y['raw_pred'])
+
 class ClassificationClient(mqttclient.Client):
-    def __init__(self):
+    def __init__(self, model, callback=print_response):
         super().__init__()
         self.id = uuid.uuid4().hex
         self.request_id = -1
+        self.callback = callback
+        if model not in ['fall_detection', 'activity_recognition']:
+            raise Exception()
+        self.model = model
 
     def request_prediction(self, x):
         self.request_id += 1
         data = encode_mqtt_request(self.id, self.request_id, x.astype(INPUT_TYPE_NP))
-        self.publish('request', data)
-        # print(f'[SEND] Request#{self.request_id} -> {x.shape}')
+        self.publish(f'request/{self.model}', data)
 
     def on_message(self, _, userdata, message):
         request_id, y = decode_mqtt_payload2(message.payload)
-        print(request_id, y['label'], y['conf'])
-        # print(f'[RECV] Request#{request_id} <- [{y.shape}]')
+        self.callback(request_id, y)
 
     def on_connect(self, _, userdata, flags, rc):
         if rc == 0:
-            self.subscribe(path.join('results', self.id))
+            self.subscribe(path.join('results', self.model, self.id))
             print('Client Successfully Connected to Broker')
         else:
             print("Failed to connect to broker!", rc)

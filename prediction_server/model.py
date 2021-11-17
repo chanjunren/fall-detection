@@ -20,18 +20,20 @@ from parameters import TIME_STEPS, TAG_PERIOD, WINDOW_SZ, WEIGHTS_BASE_PATH
 def multi_f_c(f, c):
     assert c > 3
     return [
-        layers.LSTM(64, input_shape=(TIME_STEPS, f)),
+        layers.LSTM(128, input_shape=(TIME_STEPS, f)),
         layers.Dropout(.5),
-        layers.Dense(units=24, activation='relu'),
+        layers.Dense(units=64, activation='relu'),
         layers.Dense(units=c, activation='softmax'),
     ]
 
 def binary_f_c(f, c):
     assert c in [1,2]
     return [
-        layers.LSTM(128, input_shape=(TIME_STEPS, f)),
-        layers.Dropout(.5),
-        layers.Dense(units=64, activation='relu'),
+        layers.LSTM(100, return_sequences=True, input_shape=(40, f)),
+        layers.Dropout(.3),
+        layers.LSTM(100, ),
+        layers.Dropout(.3),
+        layers.Dense(units=50, activation='relu'),
         layers.Dense(units=1, activation='sigmoid'),
     ]
 
@@ -39,7 +41,7 @@ def compile(model, binary):
     if binary:
         model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
     else:
-        model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+        model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
     return model
 
 def get_model(name, features, classes, is_binary):
@@ -138,17 +140,22 @@ def encode_label_to_target(y_label, classes, binary):
 def decode_prediction_binary(prediction, threshold=.5, classes=None):
     positive = classes[1] if classes else 1
     negative = classes[0] if classes else 0
-    return np.where(prediction > threshold, positive , negative)
+    return np.where(prediction > threshold, positive , negative).tolist(), prediction.tolist()
 
 def decode_prediction_multi(prediction, threshold=0, classes=None):
-    which_class = prediction.argmax(1)
-    idx = np.unravel_index(which_class, prediction.shape)
-    decision = np.where(prediction[idx] > threshold, which_class, -1)
+    # sort by confidence in descending order
+    pred_sort = np.sort(prediction, 1)[:,::-1]
+    which_class = prediction.argsort(1)[:,::-1]
+    decision = None
     if classes:
-        classes[-1] = 'unknown'
-        decision = list(map(lambda y: classes[y], decision))
+        classes = np.array(classes)
+        decision = np.array(classes)[which_class]
+        low_conf = np.array(list(map(lambda x: f'{x} (low confidence)', classes)))
+        decision = np.where(pred_sort > threshold, classes, low_conf).tolist()
+    else:
+        decision = which_class.tolist()
 
-    return decision
+    return decision, pred_sort.tolist()
 
 def get_binary_model(version, six=False):
     classes=['not_falling', 'falling']
@@ -206,12 +213,20 @@ if __name__ == "__main__":
     sys.path.append('../data_collection')
     import dataset
 
-    version = 1
+    # 10
+    # 11
+    # 12
+    # 13
+    # 14
+    # 15 100-100-50
+    # 16  split sets
+    #
+    version = 16
     model, features, classes, transform_y = get_binary_model(version)
-    model, features, classes, transform_y = get_multi_model(version)
+    # model, features, classes, transform_y = get_multi_model(version)
 
-    meta = dataset.dataset_meta(period=TAG_PERIOD, window=WINDOW_SZ//2, stride=1, train=.6, val=.4, test=0, wrist=True, waist=True)
-    train_gen = dataset.DataGen(dataset_meta=meta, part='train', transform_y=transform_y)
-    val_gen  = dataset.DataGen(dataset_meta=meta, part='val', transform_y=transform_y)
-    test_gen = None
-    train(model, train_gen, val_gen, val_gen, 10, 10, True, version+2)
+    meta = dataset.dataset_meta('falldet', period=TAG_PERIOD, window=40, stride=5, train=.2, val=.1, test=.7, wrist=True, waist=True)
+    val_gen  = dataset.DataGen(dataset_meta=meta, part='train', transform_y=transform_y)
+    test_gen  = dataset.DataGen(dataset_meta=meta, part='val', transform_y=transform_y)
+    train_gen = dataset.DataGen(dataset_meta=meta, part='test', transform_y=transform_y)
+    train(model, train_gen, val_gen, test_gen, 10, 10, False, version)

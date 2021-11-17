@@ -29,14 +29,17 @@ def decode_mqtt_payload(payload):
     return client_id, request_id, x
 
 ## return json serialized resoponse
-def encode_mqtt_response(request_id, y, classes):
-
-    pred = decode_prediction_binary(y, .5, classes)
-
+def encode_mqtt_response(request_id, y, classes, binary):
+    label = None
+    pred = None
+    if binary:
+        label, pred = decode_prediction_binary(y, .5, classes)
+    else:
+        label, pred = decode_prediction_multi(y, 0, classes)
     data = json.dumps({
         'request_id': request_id,
-        'label': pred.tolist(),
-        'conf': y.tolist()
+        'label': label,
+        'raw_pred': pred
     })
     return data
 
@@ -56,7 +59,7 @@ def classification_loop(worker_id, get_model_fxn, model_version):
 
 
 class ClassificationServer(mqttclient.Client):
-    def __init__(self, n_workers, get_model_fxn, model_version):
+    def __init__(self, n_workers, get_model_fxn, model_version, model):
         super().__init__()
         self.n_workers = n_workers
         self.barrier = Barrier(n_workers + 2, print_when_lifted)
@@ -68,12 +71,18 @@ class ClassificationServer(mqttclient.Client):
         self.features = features
         self.classes = classes
 
+        if model not in ['fall_detection', 'activity_recognition']:
+            raise Exception()
+        self.model = model
+        self.is_binary_classification = (model == 'fall_detection')
+
+
     def publish_response_loop(self):
         self.barrier.wait()
         while True:
             client_id, request_id, y = self.pub_q.get()
-            data = encode_mqtt_response(request_id, y, self.classes)
-            self.publish(path.join('results', client_id), data)
+            data = encode_mqtt_response(request_id, y, self.classes, self.is_binary_classification)
+            self.publish(path.join('results', self.model, client_id), data)
             print(f'[SEND  to  {client_id[:4]}] Request#{request_id} -> [{y.shape}]')
 
     def on_message(self, _, userdata, message):
@@ -83,7 +92,7 @@ class ClassificationServer(mqttclient.Client):
 
     def on_connect(self, _, userdata, flags, rc):
         if rc == 0:
-            self.subscribe(path.join('request', '#'))
+            self.subscribe(path.join('request', self.model, '#'))
             print('Server Successfully Connected to Broker')
         else:
             print("Failed to connect to broker", rc)
@@ -102,5 +111,10 @@ if __name__ == "__main__":
     import sys
     n_workers = int(sys.argv[1])
     model_path = sys.argv[2]
-    server = ClassificationServer(n_workers, get_binary_model, 1)
-    server.start()
+    binary = True if sys.argv[3]=='1' else False
+    if binary:
+        server = ClassificationServer(n_workers, get_binary_model, 1, 'fall_detection')
+        server.start()
+    else:
+        server = ClassificationServer(n_workers, get_multi_model, 1, 'activity_recognition')
+        server.start()
