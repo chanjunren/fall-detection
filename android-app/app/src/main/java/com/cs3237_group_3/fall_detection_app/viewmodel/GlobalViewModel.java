@@ -22,12 +22,15 @@ public class GlobalViewModel extends AndroidViewModel {
 
     private MutableLiveData<Boolean> isMqttConnected;
     private MutableLiveData<String> activityReceivedFromServer;
+    private MutableLiveData<Integer> wristBatteryLevel, waistBatteryLevel;
 
     public GlobalViewModel(@NonNull Application application) {
         super(application);
         appRepository = new AppRepository(application);
         isMqttConnected = new MutableLiveData<>(false);
         activityReceivedFromServer = new MutableLiveData<>("");
+        wristBatteryLevel = new MutableLiveData<>(49);
+        waistBatteryLevel = new MutableLiveData<>(56);
     }
 
     public void initMqttService(Context context, String serverUri) {
@@ -72,5 +75,21 @@ public class GlobalViewModel extends AndroidViewModel {
 
     public void postActivityStatus(String status) {
         this.activityReceivedFromServer.postValue(status);
+    }
+
+    public MutableLiveData<Integer> getWristBatteryLevel() {
+        return wristBatteryLevel;
+    }
+
+    public void postWristBatteryLevel(int battery) {
+        this.wristBatteryLevel.postValue(battery);
+    }
+
+    public MutableLiveData<Integer> getWaistBatteryLevel() {
+        return waistBatteryLevel;
+    }
+
+    public void postWaistBatteryLevel(int battery) {
+        this.waistBatteryLevel.postValue(battery);
     }
 }

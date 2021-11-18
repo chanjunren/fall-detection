@@ -45,7 +45,8 @@ public class DashboardFragment extends Fragment
     private AVLoadingIndicatorView wristSensorLiv, waistSensorLiv, serverLiv, activityLiv;
     private MaterialCardView wristSensorConnCard, waistSensorConnCard,
             serverConnCard, activityStatusCard;
-    private TextView wristSensorConnTv, waistSensorConnTv, serverConnTv, activityStatusTv;
+    private TextView wristSensorConnTv, waistSensorConnTv, serverConnTv, activityStatusTv,
+            wristLabelTv, waistLabelTv;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -64,6 +65,8 @@ public class DashboardFragment extends Fragment
                               @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         navController = Navigation.findNavController(view);
+        wristLabelTv = view.findViewById(R.id.dbWristSensorTv);
+        waistLabelTv = view.findViewById(R.id.dbWaistSensorTv);
         viewModel = new ViewModelProvider(this).get(GlobalViewModel.class);
         viewModel.initBleServices(
                 (BluetoothManager) getActivity().getSystemService(Context.BLUETOOTH_SERVICE),
@@ -100,7 +103,8 @@ public class DashboardFragment extends Fragment
                 return;
             }
             serverUri = config.getServerIp();
-            viewModel.initMqttService(getActivity().getApplicationContext(), serverUri);
+//            viewModel.initMqttService(getActivity().getApplicationContext(), serverUri);
+            bleManager.setViewModel(viewModel);
             bleManager.connectToSensorTags(config.getWristSensorMacAdd(), config.getWaistSensorMacAdd());
         };
         viewModel.getConfigurationLiveDataFromRepo().observe(getViewLifecycleOwner(),
@@ -150,6 +154,26 @@ public class DashboardFragment extends Fragment
         viewModel.getActivityReceivedFromServer().observe(getViewLifecycleOwner(),
                 activityStatusObserver);
 
+        final Observer<Integer> wristBattObserver = batt -> {
+            if (batt == null) {
+                Log.e(TAG, "batt is null");
+                return;
+            }
+            wristLabelTv.setText(String.format("Wrist Sensor (%d%%)", batt));
+        };
+        viewModel.getWristBatteryLevel().observe(getViewLifecycleOwner(),
+                wristBattObserver);
+
+        final Observer<Integer> waistBattObserver = batt -> {
+            if (batt == null) {
+                Log.e(TAG, "batt is null");
+                return;
+            }
+            waistLabelTv.setText(String.format("Waist Sensor (%d%%)", batt));
+        };
+        viewModel.getWaistBatteryLevel().observe(getViewLifecycleOwner(),
+                waistBattObserver);
+
     }
 
     private void setConnRes(MaterialCardView card, TextView tv,
@@ -189,6 +213,4 @@ public class DashboardFragment extends Fragment
             viewModel.initMqttService(getActivity().getApplicationContext(), serverUri);
         }
     }
-
-
 }

@@ -19,7 +19,11 @@ import android.os.ParcelUuid;
 import android.util.Log;
 
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModel;
 
+import com.cs3237_group_3.fall_detection_app.viewmodel.GlobalViewModel;
+
+import static com.cs3237_group_3.fall_detection_app.util.Utilities.BATT_LEVEL_CHAR_STRING;
 import static com.cs3237_group_3.fall_detection_app.util.Utilities.BATT_LEVEL_CHAR_UUID;
 import static com.cs3237_group_3.fall_detection_app.util.Utilities.BATT_SERVICE_UUID_STRING;
 import static com.cs3237_group_3.fall_detection_app.util.Utilities.CC2650_CCCD_UUID;
@@ -41,12 +45,17 @@ public class BleManager {
     private BluetoothGattCallback waistConnCallback, wristConnCallback,
             waistReadCallback, wristReadCallback;
     private ScanCallback connScanCallback, waistScanCallback, wristScanCallback;
+    private GlobalViewModel viewModel;
 
     public BleManager(BluetoothManager bluetoothManager, Context context) {
         this.bleScanner = bluetoothManager.getAdapter().getBluetoothLeScanner();
         isWaistSensorTagConnected = new MutableLiveData<>(false);
         isWristSensorTagConnected = new MutableLiveData<>(false);
         this.context = context;
+    }
+
+    public void setViewModel(GlobalViewModel viewModel) {
+        this.viewModel = viewModel;
     }
 
     // Notable errors
@@ -194,7 +203,7 @@ public class BleManager {
             public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
                 super.onCharacteristicRead(gatt, characteristic, status);
                 if  (status == BluetoothGatt.GATT_SUCCESS) {
-                    broadcastUpdate(null, characteristic);
+                    broadcastUpdate(null, true, characteristic);
                 } else if (status == BluetoothGatt.GATT_READ_NOT_PERMITTED) {
                     Log.e(TAG, String.format("Read not permitted for this uuid: !",
                             characteristic.getUuid().toString()));
@@ -237,8 +246,8 @@ public class BleManager {
                         }
                         if (service.getCharacteristic(BATT_LEVEL_CHAR_UUID) != null) {
                             Log.i(TAG, "Battery charactersitic uuid found");
-                            gatt.setCharacteristicNotification(service.getCharacteristic(BATT_LEVEL_CHAR_UUID), true);
-
+//                            gatt.setCharacteristicNotification(service.getCharacteristic(BATT_LEVEL_CHAR_UUID), true);
+                            gatt.readCharacteristic(service.getCharacteristic(BATT_LEVEL_CHAR_UUID));
                         }
                     }
                 }
@@ -272,7 +281,7 @@ public class BleManager {
             public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
                 super.onCharacteristicRead(gatt, characteristic, status);
                 if  (status == BluetoothGatt.GATT_SUCCESS) {
-                    broadcastUpdate(null, characteristic);
+                    broadcastUpdate(null, false, characteristic);
                 } else if (status == BluetoothGatt.GATT_READ_NOT_PERMITTED) {
                     Log.e(TAG, String.format("Read not permitted for this uuid: !",
                             characteristic.getUuid().toString()));
@@ -286,7 +295,7 @@ public class BleManager {
             public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
                 super.onCharacteristicChanged(gatt, characteristic);
                 Log.i(TAG, "Characteristic changed proc!");
-                broadcastUpdate(null, characteristic);
+                broadcastUpdate(null, false, characteristic);
             }
 
 
@@ -326,7 +335,7 @@ public class BleManager {
         wristSensorTag.connectGatt(context, true, wristConnCallback);
     }
 
-    private void broadcastUpdate(final String action,
+    private void broadcastUpdate(final String action, boolean wrist,
                                  final BluetoothGattCharacteristic characteristic) {
         Log.i(TAG, "Broadcasting update....");
         final Intent intent = new Intent(action);
@@ -336,7 +345,14 @@ public class BleManager {
             final StringBuilder stringBuilder = new StringBuilder(data.length);
             for(byte byteChar : data)
                 stringBuilder.append(String.format("%02X ", byteChar));
-            Log.i(TAG, stringBuilder.toString());
+            if (characteristic.getUuid().toString().equals(BATT_LEVEL_CHAR_STRING)) {
+                if (wrist) {
+                    viewModel.postWristBatteryLevel(Integer.parseInt(stringBuilder.toString().trim()));
+                } else {
+                    viewModel.postWaistBatteryLevel(Integer.parseInt(stringBuilder.toString().trim()));
+                }
+            }
+            Log.i(TAG, characteristic.getUuid().toString() + " | " + stringBuilder.toString());
         }
         context.sendBroadcast(intent);
     }
@@ -350,7 +366,7 @@ public class BleManager {
 
     private void writeDescriptor(BluetoothGatt gatt,
                                  BluetoothGattDescriptor descriptor, byte[] payload) {
-        descriptor.setValue(payload);
+        descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
         gatt.writeDescriptor(descriptor);
     }
 

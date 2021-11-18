@@ -22,6 +22,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import static com.cs3237_group_3.fall_detection_app.util.Utilities.ACTIVITY_OUTPUT_TOPIC;
+import static com.cs3237_group_3.fall_detection_app.util.Utilities.WAIST_BATTERY_LEVEL_TOPIC;
+import static com.cs3237_group_3.fall_detection_app.util.Utilities.WRIST_BATTERY_LEVEL_TOPIC;
 import static com.cs3237_group_3.fall_detection_app.util.Utilities.WRITE_CHANNEL;
 
 public class MqttClient {
@@ -67,7 +69,18 @@ public class MqttClient {
             @Override
             public void messageArrived(String topic, MqttMessage message) throws Exception {
                 Log.i(TAG, "Incoming message: " + new String(message.getPayload()));
-                viewModel.getActivityReceivedFromServer().postValue(new String(message.getPayload()));
+                if (topic.equals(ACTIVITY_OUTPUT_TOPIC)) {
+                    viewModel.getActivityReceivedFromServer().postValue(new String(message.getPayload()));
+                } else if (topic.equals(WRIST_BATTERY_LEVEL_TOPIC)) {
+                    viewModel.postWristBatteryLevel(
+                        Integer.parseInt(new String(message.getPayload()))
+                    );
+                } else if (topic.equals(WAIST_BATTERY_LEVEL_TOPIC)) {
+                    viewModel.postWaistBatteryLevel(
+                        Integer.parseInt(new String(message.getPayload()))
+                    );
+                }
+
             }
 
             @Override
@@ -130,7 +143,30 @@ public class MqttClient {
 //                    addToHistory("Failed to subscribe");
                     Log.e(TAG, "Failed to subscribe!");
                 }
+            });
+            client.subscribe(WRIST_BATTERY_LEVEL_TOPIC, 0, context, new IMqttActionListener() {
+                @Override
+                public void onSuccess(IMqttToken asyncActionToken) {
+                    Log.i(TAG, "Subscribed successfully!");
+                }
 
+                @Override
+                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+//                    addToHistory("Failed to subscribe");
+                    Log.e(TAG, "Failed to subscribe!");
+                }
+            });
+            client.subscribe(WAIST_BATTERY_LEVEL_TOPIC, 0, context, new IMqttActionListener() {
+                @Override
+                public void onSuccess(IMqttToken asyncActionToken) {
+                    Log.i(TAG, "Subscribed successfully!");
+                }
+
+                @Override
+                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+//                    addToHistory("Failed to subscribe");
+                    Log.e(TAG, "Failed to subscribe!");
+                }
             });
 
         } catch (MqttException e){
