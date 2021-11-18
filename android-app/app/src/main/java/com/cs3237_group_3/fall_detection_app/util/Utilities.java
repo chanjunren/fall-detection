@@ -22,6 +22,6 @@ public class Utilities {
 
     public static final String BLE_READING_TOPIC = "ble_data";
     public static final String ACTIVITY_OUTPUT_TOPIC = "test123";
-
-    public static final String FALL_DETECTION_MSG = "Fall!";
+    public static final String WRITE_CHANNEL = "test456";
+    public static final String FALL_DETECTION_MSG = "fall!";
 }

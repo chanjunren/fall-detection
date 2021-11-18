@@ -11,6 +11,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -29,10 +31,13 @@ import org.jetbrains.annotations.NotNull;
 
 import at.markushi.ui.CircleButton;
 
+import static com.cs3237_group_3.fall_detection_app.util.Utilities.FALL_DETECTION_MSG;
+
 public class DashboardFragment extends Fragment
         implements View.OnClickListener {
     private final String TAG = "DashboardFragment";
     private GlobalViewModel viewModel;
+    private NavController navController;
     private BleManager bleManager;
     private ConfigurationData configurationData;
     private String serverUri;
@@ -58,6 +63,7 @@ public class DashboardFragment extends Fragment
     public void onViewCreated(@NonNull @NotNull View view,
                               @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        navController = Navigation.findNavController(view);
         viewModel = new ViewModelProvider(this).get(GlobalViewModel.class);
         viewModel.initBleServices(
                 (BluetoothManager) getActivity().getSystemService(Context.BLUETOOTH_SERVICE),
@@ -135,6 +141,11 @@ public class DashboardFragment extends Fragment
                 return;
             }
             setActivityStatus(status);
+            if (status.equals(FALL_DETECTION_MSG)) {
+                if (navController.getCurrentDestination().getId() == R.id.homeFragment) {
+                    navController.navigate(R.id.action_homeFragment_to_fallAlertDialog);
+                }
+            }
         };
         viewModel.getActivityReceivedFromServer().observe(getViewLifecycleOwner(),
                 activityStatusObserver);

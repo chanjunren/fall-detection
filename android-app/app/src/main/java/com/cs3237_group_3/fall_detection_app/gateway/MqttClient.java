@@ -18,14 +18,19 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import static com.cs3237_group_3.fall_detection_app.util.Utilities.ACTIVITY_OUTPUT_TOPIC;
+import static com.cs3237_group_3.fall_detection_app.util.Utilities.WRITE_CHANNEL;
 
 public class MqttClient {
     private final String TAG = "MqttClient";
 
     final String serverUri = "tcp://192.168.10.127:1883";
 
-    String clientId = "ExampleAndroidClient12312412r3";
+    String clientId = "CS3237_Group_3";
+    private Timer timer;
 
     private final MqttAndroidClient client;
     private GlobalViewModel viewModel;
@@ -56,6 +61,7 @@ public class MqttClient {
             public void connectionLost(Throwable cause) {
                 Log.i(TAG, "The Connection was lost.");
                 viewModel.postMqttConnStatus(false);
+//                timer.cancel();
             }
 
             @Override
@@ -90,8 +96,9 @@ public class MqttClient {
                     disconnectedBufferOptions.setDeleteOldestMessages(false);
                     client.setBufferOpts(disconnectedBufferOptions);
                     subscribeToTopic();
-
+                    publishMessage("hello");
                     viewModel.postMqttConnStatus(true);
+//                    periodicWrite();
                 }
 
                 @Override
@@ -131,20 +138,30 @@ public class MqttClient {
         }
     }
 //
-//        public void publishMessage(){
-//
-//            try {
-//                MqttMessage message = new MqttMessage();
-//                message.setPayload(publishMessage.getBytes());
-//                mqttAndroidClient.publish(publishTopic, message);
-//                addToHistory("Message Published");
-//                if(!mqttAndroidClient.isConnected()){
-//                    addToHistory(mqttAndroidClient.getBufferedMessageCount() + " messages in buffer.");
-//                }
-//            } catch (MqttException e) {
-//                System.err.println("Error Publishing: " + e.getMessage());
-//                e.printStackTrace();
+    public void periodicWrite() {
+        timer = new Timer();
+
+        timer.schedule( new TimerTask() {
+            public void run() {
+                // do your work
+                publishMessage("Message to keep client alive");
+            }
+        }, 0, 5*1000);
+    }
+
+    public void publishMessage(String publishMessage){
+
+        try {
+            MqttMessage message = new MqttMessage();
+            message.setPayload(publishMessage.getBytes());
+            client.publish(WRITE_CHANNEL, message);
+//            if(!lient.isConnected()){
+//                addToHistory(mqttAndroidClient.getBufferedMessageCount() + " messages in buffer.");
 //            }
-//        }
+        } catch (MqttException e) {
+            System.err.println("Error Publishing: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 }
 
