@@ -36,9 +36,10 @@ public class DashboardFragment extends Fragment
     private BleManager bleManager;
     private ConfigurationData configurationData;
 
-    private AVLoadingIndicatorView wristSensorLiv, waistSensorLiv, serverLiv;
-    private MaterialCardView wristSensorConnCard, waistSensorConnCard, serverConnCard;
-    private TextView wristSensorConnTv, waistSensorConnTv, serverConnTv;
+    private AVLoadingIndicatorView wristSensorLiv, waistSensorLiv, serverLiv, activityLiv;
+    private MaterialCardView wristSensorConnCard, waistSensorConnCard,
+            serverConnCard, activityStatusCard;
+    private TextView wristSensorConnTv, waistSensorConnTv, serverConnTv, activityStatusTv;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -81,6 +82,9 @@ public class DashboardFragment extends Fragment
         serverConnTv = view.findViewById(R.id.serverConnTv);
         CircleButton refreshServerConnBtn = view.findViewById(R.id.refreshServerConnBtn);
         refreshServerConnBtn.setOnClickListener(this);
+
+        activityStatusCard = view.findViewById(R.id.activityStatusCard);
+        activityStatusTv = view.findViewById(R.id.activityStatusTv);
     }
 
     private void initObservers() {
@@ -123,6 +127,16 @@ public class DashboardFragment extends Fragment
         viewModel.getMqttConnLiveData().observe(getViewLifecycleOwner(),
                 mqttConnStatusObserver);
 
+        final Observer<String> acitivityStatusObserver = status -> {
+            if (status == null) {
+                Log.e(TAG, "mqttConnRes is null");
+                return;
+            }
+            setActivityStatus(status);
+        };
+        viewModel.getMqttConnLiveData().observe(getViewLifecycleOwner(),
+                mqttConnStatusObserver);
+
     }
 
     private void setConnRes(MaterialCardView card, TextView tv,
@@ -142,6 +156,10 @@ public class DashboardFragment extends Fragment
         liv.setVisibility(View.VISIBLE);
         card.setVisibility(View.INVISIBLE);
         tv.setVisibility(View.VISIBLE);
+    }
+
+    private void setActivityStatus(String status) {
+        activityStatusTv.setText(status);
     }
 
     @Override

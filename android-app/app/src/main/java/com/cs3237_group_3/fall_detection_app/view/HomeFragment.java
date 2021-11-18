@@ -51,7 +51,7 @@ public class HomeFragment extends Fragment {
         viewPager.setAdapter(new HomePageAdapter(getChildFragmentManager(),
                 BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT));
 
-        final String[] colors = getResources().getStringArray(R.array.vertical_ntb);
+        final String[] colors = getResources().getStringArray(R.array.medical_express);
 
         final NavigationTabBar navigationTabBar = (NavigationTabBar) view.findViewById(R.id.ntb_vertical);
         final ArrayList<NavigationTabBar.Model> models = new ArrayList<>();

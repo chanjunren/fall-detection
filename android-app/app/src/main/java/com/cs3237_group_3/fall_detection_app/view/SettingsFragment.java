@@ -67,15 +67,32 @@ public class SettingsFragment extends Fragment {
         ConstraintLayout configWaistTagBtn = view.findViewById(R.id.configWaistTagBtn);
         ConstraintLayout configServerAddBtn = view.findViewById(R.id.configServerAddBtn);
         ConstraintLayout configContactBtn = view.findViewById(R.id.configContactBtn);
-        configWristTagBtn.setOnClickListener(v ->
-                navController.navigate(R.id.action_homeFragment_to_configWristSensorFragment));
-        configWaistTagBtn.setOnClickListener(v ->
-                navController.navigate(R.id.action_homeFragment_to_configWaistSensorFragment));
+        configWristTagBtn.setOnClickListener(v -> {
+            navController.navigate(R.id.action_homeFragment_to_configWristSensorFragment);
+//            if (navController.getCurrentDestination().getId() == R.id.homeFragment) {
+//                navController.navigate(R.id.action_homeFragment_to_configWristSensorFragment);
+//            }
+        });
+        configWaistTagBtn.setOnClickListener(v -> {
+            navController.navigate(R.id.action_homeFragment_to_configWaistSensorFragment);
+//            if (navController.getCurrentDestination().getId() == R.id.homeFragment) {
+//                navController.navigate(R.id.action_homeFragment_to_configWaistSensorFragment);
+//            }
+        });
+        configServerAddBtn.setOnClickListener(v -> {
+            navController.navigate(R.id.action_homeFragment_to_fallAlertDialog);
+//            navController.navigate(R.id.action_homeFragment_to_editServerFragment);
+//            if (navController.getCurrentDestination().getId() == R.id.homeFragment)
+//            {
+//                navController.navigate(R.id.action_homeFragment_to_editServerFragment);
+//            }
+        });
 
-        configServerAddBtn.setOnClickListener(v ->
-                navController.navigate(R.id.action_homeFragment_to_editServerFragment));
-
-        configContactBtn.setOnClickListener(v ->
-                navController.navigate(R.id.action_homeFragment_to_editContactFragment));
+        configContactBtn.setOnClickListener(v -> {
+            navController.navigate(R.id.action_homeFragment_to_editContactFragment);
+//            if (navController.getCurrentDestination().getId() == R.id.homeFragment) {
+//                navController.navigate(R.id.action_homeFragment_to_editContactFragment);
+//            }
+        });
     }
 }

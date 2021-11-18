@@ -33,7 +33,7 @@
             android:layout_height="0dp"
             app:layout_constraintHeight_percent="0.17"
             app:layout_constraintTop_toBottomOf="@id/dashboardHeader"
-            android:layout_marginTop="100dp"
+            android:layout_marginTop="50dp"
             app:cardCornerRadius="13px"
             app:cardBackgroundColor="@color/card_bg"
             app:strokeColor="#4D4D4D"
@@ -305,6 +305,86 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/activityStatusCard"
+            android:layout_width="0dp"
+            app:layout_constraintWidth_percent="0.8"
+            android:layout_height="0dp"
+            app:layout_constraintHeight_percent="0.17"
+            app:layout_constraintTop_toBottomOf="@id/serverCard"
+            android:layout_marginTop="25dp"
+            app:cardCornerRadius="13px"
+            app:cardBackgroundColor="@color/card_bg"
+            app:strokeColor="#4D4D4D"
+            app:strokeWidth="1px"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/activityStatusLabelTv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/gilroy_extrabold"
+                    android:text="Activity"
+                    android:textColor="@color/text_color"
+                    android:textSize="20dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.15"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.15" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/statusCard"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="13dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="@color/card_bg"
+                    app:layout_constraintHorizontal_bias="0.15"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/activityStatusLabelTv">
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <TextView
+                            android:id="@+id/activityStatusTv"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:fontFamily="@font/gilroy_extrabold"
+                            android:padding="10dp"
+                            android:text="Waiting for server..."
+                            android:textColor="@color/white"
+                            android:textSize="17dp"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+<!--                <com.wang.avi.AVLoadingIndicatorView-->
+<!--                    android:id="@+id/activityStatusLiv"-->
+<!--                    android:layout_width="25dp"-->
+<!--                    android:layout_height="25dp"-->
+<!--                    app:indicatorColor="@color/text_color"-->
+<!--                    app:indicatorName="LineScaleIndicator"-->
+<!--                    app:layout_constraintHorizontal_bias="0.15"-->
+<!--                    app:layout_constraintBottom_toBottomOf="parent"-->
+<!--                    app:layout_constraintEnd_toEndOf="parent"-->
+<!--                    app:layout_constraintStart_toStartOf="parent"-->
+<!--                    app:layout_constraintTop_toBottomOf="@id/activityStatusLabelTv" />-->
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </com.google.android.material.card.MaterialCardView>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

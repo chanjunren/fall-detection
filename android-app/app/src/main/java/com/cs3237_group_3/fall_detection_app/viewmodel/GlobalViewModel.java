@@ -21,11 +21,13 @@ public class GlobalViewModel extends AndroidViewModel {
     private MqttClient mqttClient;
 
     private MutableLiveData<Boolean> isMqttConnected;
+    private MutableLiveData<String> activityReceivedFromServer;
 
     public GlobalViewModel(@NonNull Application application) {
         super(application);
         appRepository = new AppRepository(application);
         isMqttConnected = new MutableLiveData<>(false);
+        activityReceivedFromServer = new MutableLiveData<>("");
     }
 
     public void initMqttService(Context context) {
@@ -62,5 +64,13 @@ public class GlobalViewModel extends AndroidViewModel {
 
     public void postMqttConnStatus(boolean isMqttConnected) {
         this.isMqttConnected.postValue(isMqttConnected);
+    }
+
+    public MutableLiveData<String> getActivityReceivedFromServer() {
+        return activityReceivedFromServer;
+    }
+
+    public void postActivityStatus(String status) {
+        this.activityReceivedFromServer.postValue(status);
     }
 }

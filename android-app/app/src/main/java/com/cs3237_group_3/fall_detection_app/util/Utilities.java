@@ -19,4 +19,7 @@ public class Utilities {
     public static final String CC2650_DATA_UUID_STRING = "f000aa81-0451-4000-b000-000000000000";
     public static final String BATT_SERVICE_UUID_STRING = "0000180f-0000-1000-8000-00805f9b34fb";
     public static final String BATT_LEVEL_CHAR_STRING = "00002a19-0000-1000-8000-00805f9b34fb";
+
+    public static final String BLE_READING_TOPIC = "ble_data";
+    public static final String ACTIVITY_OUTPUT_TOPIC = "activity_output";
 }

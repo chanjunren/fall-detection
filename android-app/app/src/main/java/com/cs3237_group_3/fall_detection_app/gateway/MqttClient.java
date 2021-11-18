@@ -18,15 +18,14 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
+import static com.cs3237_group_3.fall_detection_app.util.Utilities.ACTIVITY_OUTPUT_TOPIC;
+
 public class MqttClient {
     private final String TAG = "MqttClient";
 
-    final String serverUri = "tcp://192.168.10.126:1883";
+    final String serverUri = "tcp://test.mosquitto.org:1883";
 
     String clientId = "ExampleAndroidClient12312412r3";
-    final String subscriptionTopic = "exampleAndroidTopic";
-    final String publishTopic = "exampleAndroidPublishTopic";
-    final String publishMessage = "Hello World!";
 
     private final MqttAndroidClient client;
     private GlobalViewModel viewModel;
@@ -85,7 +84,7 @@ public class MqttClient {
                     disconnectedBufferOptions.setPersistBuffer(false);
                     disconnectedBufferOptions.setDeleteOldestMessages(false);
                     client.setBufferOpts(disconnectedBufferOptions);
-//                    subscribeToTopic();
+                    subscribeToTopic();
 
                     viewModel.postMqttConnStatus(true);
                 }
@@ -97,41 +96,35 @@ public class MqttClient {
 //                    addToHistory();
                     viewModel.postMqttConnStatus(false);
                 }
+
             });
 
 
         } catch (MqttException ex){
             ex.printStackTrace();
         }
+    }
 
-//        public void subscribeToTopic(){
-//            try {
-//                mqttAndroidClient.subscribe(subscriptionTopic, 0, null, new IMqttActionListener() {
-//                    @Override
-//                    public void onSuccess(IMqttToken asyncActionToken) {
-//                        addToHistory("Subscribed!");
-//                    }
-//
-//                    @Override
-//                    public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-//                        addToHistory("Failed to subscribe");
-//                    }
-//                });
-//
-//                // THIS DOES NOT WORK!
-//                mqttAndroidClient.subscribe(subscriptionTopic, 0, new IMqttMessageListener() {
-//                    @Override
-//                    public void messageArrived(String topic, MqttMessage message) throws Exception {
-//                        // message Arrived!
-//                        System.out.println("Message: " + topic + " : " + new String(message.getPayload()));
-//                    }
-//                });
-//
-//            } catch (MqttException ex){
-//                System.err.println("Exception whilst subscribing");
-//                ex.printStackTrace();
-//            }
-//        }
+    public void subscribeToTopic(){
+        try {
+            client.subscribe(ACTIVITY_OUTPUT_TOPIC, 0, null, new IMqttActionListener() {
+                @Override
+                public void onSuccess(IMqttToken asyncActionToken) {
+                    Log.i(TAG, "Subscribed successfully!");
+                }
+
+                @Override
+                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+//                    addToHistory("Failed to subscribe");
+                    Log.e(TAG, "Failed to subscribe!");
+                }
+
+            });
+
+        } catch (MqttException e){
+            Log.e(TAG, "Subscribe error: " + e.toString());
+        }
+    }
 //
 //        public void publishMessage(){
 //
@@ -148,6 +141,5 @@ public class MqttClient {
 //                e.printStackTrace();
 //            }
 //        }
-    }
 }
 
