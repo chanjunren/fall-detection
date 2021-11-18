@@ -76,11 +76,11 @@ INPUT_TYPE_NP = np.float64
 INPUT_TYPE_AR = 'd'
 
 # mqtt parameters
-# MQTT_BROKER_HOST = '192.168.10.126'
-MQTT_BROKER_HOST = 'localhost'
+MQTT_BROKER_HOST = '192.168.10.127'
+# MQTT_BROKER_HOST = 'localhost'
 MQTT_USER = 'testuser1'
 # MQTT_USER = 'testuser2'
-MQTT_PASS = os.environ['MQTT_PASS']
+MQTT_PASS = 'pass'
 MQTT_BROKER_PORT = 1883
 
 LOG_LEVEL = logging.INFO

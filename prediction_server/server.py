@@ -33,9 +33,9 @@ def encode_mqtt_response(request_id, y, classes, binary):
     label = None
     pred = None
     if binary:
-        label, pred = decode_prediction_binary(y, .5, classes)
+        label, pred = decode_prediction_binary(y, .8, classes)
     else:
-        label, pred = decode_prediction_multi(y, 0, classes)
+        label, pred = decode_prediction_multi(y, .6, classes)
     data = json.dumps({
         'request_id': request_id,
         'label': label,
@@ -45,14 +45,15 @@ def encode_mqtt_response(request_id, y, classes, binary):
 
 def classification_loop(worker_id, get_model_fxn, model_version):
     try:
-        model, features, classes, _ = get_model_fxn(model_version)
+        model, features, classes, _, transform_x = get_model_fxn(model_version)
         input_shape = model.input.shape
-        test = np.random.rand(1, input_shape[1], input_shape[2])
+        test = np.random.rand(1, input_shape[1], 12)
+        test = transform_x(test)
         model.predict(test)
         barrier.wait()
         while True:
             client_id, request_id, x = job_q.get()
-            y = model.predict(x)
+            y = model.predict(transform_x(x))
             pub_q.put((client_id, request_id, y))
     except Exception as e:
         print(f'\n>>>>>>>>>>>> Process {getpid()} failed! <<<<<<<<<<<<\n', e)
@@ -65,7 +66,7 @@ class ClassificationServer(mqttclient.Client):
         self.barrier = Barrier(n_workers + 2, print_when_lifted)
         self.job_q = Queue()
         self.pub_q = Queue()
-        _, features, classes, _ = get_model_fxn(model_version)
+        _, features, classes, _, _ = get_model_fxn(model_version)
         self.get_model_fxn = get_model_fxn
         self.model_version = model_version
         self.features = features
@@ -110,11 +111,12 @@ class ClassificationServer(mqttclient.Client):
 if __name__ == "__main__":
     import sys
     n_workers = int(sys.argv[1])
-    model_path = sys.argv[2]
-    binary = True if sys.argv[3]=='1' else False
+    binary = True if sys.argv[2]=='1' else False
     if binary:
-        server = ClassificationServer(n_workers, get_binary_model, 1, 'fall_detection')
+        server = ClassificationServer(n_workers, get_binary_model, 12, 'fall_detection') # without HAR
+        # server = ClassificationServer(n_workers, get_binary_model, 5, 'fall_detection') # with HAR
         server.start()
     else:
-        server = ClassificationServer(n_workers, get_multi_model, 1, 'activity_recognition')
+
+        server = ClassificationServer(n_workers, get_multi_model, 19, 'activity_recognition')
         server.start()

@@ -199,10 +199,9 @@ def record_save(filename, period, time_s):
     processes.extend([Process(target=timestamp_inputs, args=(queue0_in, queue0_out, sem, start_event, time_s)) for i in range(n_timestampers)])
     processes.extend([Process(target=timestamp_inputs, args=(queue1_in, queue1_out, sem, start_event, time_s)) for i in range(n_timestampers)])
     # process for capturing frames for later labelling
-
     processes.append(Process(target=webcam, args=(start_event, sem, webcam_queue, time_s, ret_queue)))
     # to syncronise the start of the tags + rest
-    processes.append(Process(target=sync_start, args=(len(processes), start_event, sem)))
+    processes.append(Process(target=sync_start, args=(2+1+2*n_timestampers, start_event, sem)))
 
     for p in processes:
         p.start()
@@ -321,6 +320,7 @@ def label_only(filename):
     cv2.setWindowTitle("label", f'LABEL [{filename}]')
 
     while labelling:
+
             curr = df.index[pos]
             now = (time_tmp + datetime.timedelta(microseconds=int(curr-start)//1000)).strftime("%M:%S.%f")[:-3]
 
@@ -331,7 +331,7 @@ def label_only(filename):
                 label= '' if label==LABEL_NONE else label,
                 pos=(pos+1, n_frames, now, total),
                 scrub=scrub_sz,
-                help=help,
+                help=help or label==LABEL_NONE,
                 n_classes=len(IDS)-2
                 )
 
@@ -352,13 +352,10 @@ def label_only(filename):
             elif k == 1:
                 scrub_sz = max(1, scrub_sz - 1)
                 help=False
-            elif k == 32: #space
-                df.iloc[pos]['label'] = LABEL_NONE
-                pos = min(n_frames-1, pos+scrub_sz)
-                help=False
             elif k in which:
                 label = which[k]
                 df.iloc[pos]['label'] = label
+                assert df.iloc[pos]['label'] == label
                 pos = min(n_frames-1, pos+scrub_sz)
                 help=False
             elif k in [ord('q'), 27]: #escape
@@ -373,7 +370,7 @@ def label_only(filename):
                 label= '' if label==LABEL_NONE else label,
                 pos=(old_pos+1, n_frames, now, total),
                 scrub=scrub_sz,
-                help=help,
+                help=help or label==LABEL_NONE,
                 n_classes=len(IDS)-2
                 )
 
@@ -384,11 +381,7 @@ def label_only(filename):
 
 def main():
     filename = sys.argv[1]
-    try:
-        record_save(filename, TAG_PERIOD, int(sys.argv[2])) # period, time_s
-    except FileExistsError as e:
-        print(filename, 'recorded before')
-    # label_only(filename)
+    label_only(filename)
 
 
 if __name__ == "__main__":

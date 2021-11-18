@@ -3,6 +3,7 @@ import numpy as np
 import os
 from parameters import DATA_BASE_PATH, META_CSV_HEADERS, COMB_CSV_HEADERS, MANIFEST_CSV_HEADERS
 from parameters import WINDOW_SZ, TAG_PERIOD
+from parameters import LABEL_NONE
 from tensorflow.keras import utils
 from scipy.stats import mode
 
@@ -58,7 +59,7 @@ def dataset_meta(dataset, period=TAG_PERIOD, window=WINDOW_SZ//2, stride=1, trai
 
         if train > 0:
             train_start = 0
-            train_end = int(train*n_samples[file])
+            train_end = train_start + int(train*n_samples[file])
             if (train_end-train_start < window):
                 print(f'{file} not included. Not enough samples for training set')
             else:
@@ -76,7 +77,7 @@ def dataset_meta(dataset, period=TAG_PERIOD, window=WINDOW_SZ//2, stride=1, trai
 
         if test > 0:
             test_start = val_end
-            test_end = int(n_samples[file])
+            test_end = test_start + int(test*n_samples[file])
             if (test_end-test_start < window):
                 print(f'{file} not included. Not enough samples for test set')
             else:
@@ -88,16 +89,22 @@ def dataset_meta(dataset, period=TAG_PERIOD, window=WINDOW_SZ//2, stride=1, trai
                 df = pd.read_csv(path, index_col=[0]).reset_index(drop=True)
 
                 for i in range(start, end-window, stride):
-                    label = mode(df['label'].to_numpy()[i:i+window]).mode[0]#[i:i+window]#['label']
-                    if label not in meta['classes']:
-                        meta['classes'][label] = 0
-                        meta['train']['classes'][label] = 0
-                        meta['val']['classes'][label] = 0
-                        meta['test']['classes'][label] = 0
-                    meta['classes'][label] += 1
-                    meta[part]['classes'][label] += 1
+                    try:
+                        label = mode(df['label'].to_numpy()[i:i+window]).mode[0]#[i:i+window]#['label']
+                        if label == LABEL_NONE:
+                            continue
+                        if label not in meta['classes']:
+                            meta['classes'][label] = 0
+                            meta['train']['classes'][label] = 0
+                            meta['val']['classes'][label] = 0
+                            meta['test']['classes'][label] = 0
+                        meta['classes'][label] += 1
+                        meta[part]['classes'][label] += 1
 
-                    meta[part]['manifest'].append((file, i, label))
+                        meta[part]['manifest'].append((file, i, label))
+                    except IndexError:
+                        print(file, start, end, i , "index error")
+                        break
     return meta
 
 def df_dict_from_meta(meta):
@@ -107,6 +114,9 @@ def df_dict_from_meta(meta):
         .reset_index(drop=True)
         .drop('label', axis=1) for file in meta['files']
     }
+
+
+
 
 class DataGen(utils.Sequence):
     def __init__(self, batch_size=1, shuffle=True, part='train', dataset_meta=None, copy=False, seed=123, transform_x=None, transform_y=None):
@@ -142,16 +152,12 @@ class DataGen(utils.Sequence):
 
 
 if __name__ == "__main__":
-    for d in ['HAR', 'falldet']:
-        meta = dataset_meta(d, period=TAG_PERIOD, window=WINDOW_SZ, stride=5, train=.7 , val=.15, test=.15, wrist=True, waist=True)
-        # print("falldet")
-        # meta = dataset_meta("falldet", period=TAG_PERIOD, window=WINDOW_SZ//2, stride=1, train=.6, val=.4, test=0, wrist=True, waist=True)
-        print('n_train', len(meta['train']))
-        print('n_val', len(meta['val']))
-        print('n_test', len(meta['test']))
+        # meta = dataset_meta('falldet', period=TAG_PERIOD, window=25, stride=4, train=.2, val=.8, test=0, wrist=True, waist=True)
+        meta = dataset_meta('HAR', period=TAG_PERIOD, window=50, stride=2, train=.1, val=.2, test=.7, wrist=True, waist=True)
+
+        # meta = dataset_meta('falldet', period=TAG_PERIOD, window=20, stride=10, train=.6 , val=.2, test=.2, wrist=True, waist=True)
+        # meta = dataset_meta('HAR', period=TAG_PERIOD, window=80, stride=10, train=.7 , val=.2, test=.1, wrist=True, waist=True)
         print('classes', meta['classes'])
         print('classes train', meta['train']['classes'])
         print('classes val', meta['val']['classes'])
         print('classes test', meta['test']['classes'])
-        # DataGen(dataset_meta=meta, part='train')
-        # DataGen(dataset_meta=meta, part='val')

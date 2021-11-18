@@ -137,27 +137,37 @@ def main(files, dataset):
     first = True
     for i, file in enumerate(files):
         try:
-            combine(file, dataset, True)
+            combine(file, dataset, False)
         except Exception as e:
             print(e)
 
 if __name__ == "__main__":
 
     HAR_files = [
-        'stairs_brian_1',
-        'stairs_brian_2',
+        # 'stairs_brian_1',
+        # 'stairs_brian_2',
         'stairs_brian_3',
-        'walk_stand_brian_1', # long stand followed by walkings
-        'walk_stand_brian_2', # walk followed by long standing in 1 spot
-        'walk_stand_brian_3'  # walk, stop, walk, stop
+        'stairs_brian_4',
+        'walking_brian_1',
+        'walking_brian_2',
+        'standing_brian_1',
+        'stationary_brian_2',
+        'stationary_brian_3',
+        'walk_circle_brian_anti',
+        'walk_circle_brian_clock',
     ] # walking, stationary, etc
+    print(HAR_files)
     if HAR_files:
         HAR_dataet = 'HAR'
         main(HAR_files, HAR_dataet)
 
     FD_files = [
+        # 'leaning_brian_1',
         'falling_brian_2',
-        'falling_brian_3'
+        'falling_brian_3',
+        'falling_brian_4',
+        'falling_brian_5',
+        'falling_brian_7',
     ]
     if FD_files:
         FD_dataset = 'falldet'

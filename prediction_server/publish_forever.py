@@ -3,6 +3,7 @@ from multiprocessing import Manager
 from queue import Empty as QueueEmpty
 from bleak import BleakClient
 from client import ClassificationClient
+from paho.mqtt.client import Client
 import os
 import asyncio
 import platform
@@ -72,7 +73,7 @@ def window_inputs_loop(
         while True:
             data0 = queue0_in.get(timeout=queue_timeout)
             data1 = queue1_in.get(timeout=queue_timeout)
-            # print(queue0_in.qsize(), queue1_in.qsize())
+
             data0.extend(data1)
             fall_buffer.append(data0)
             fall_n += 1
@@ -105,25 +106,68 @@ def handle_server_response_loop(sem, start_event, response_queue, queue_timeout,
         print(f"No response recieved after {queue_timeout}s")
 
 
+def phone_on_connect(client, userdata, flags, rc):
+    if rc == 0:
+        client.subscribe('phoneapp_falling_resp')
+        print('Server Successfully Connected to Broker')
+    else:
+        print("Failed to connect to broker", rc)
+
+def handle_server_response_loop_har(sem, start_event, response_queue, queue_timeout, response_handler):
+    print("TO_PHONE   ", current_process().name)
+    client = Client()
+    client.username_pw_set(MQTT_USER, password=MQTT_PASS)
+    client.connect(MQTT_BROKER_HOST)
+    client.loop_start
+    client.on_connect = phone_on_connect
+
+    sem.release()
+    start_event.wait()
+    try:
+        while True:
+            request_id, response = response_queue.get(timeout=queue_timeout)
+            label = response_handler(request_id, response)
+            client.publish('phone_app', label.encode())
+
+    except QueueEmpty:
+        print(f"No response recieved after {queue_timeout}s")
+
+def handle_server_response_loop_fall(sem, start_event, response_queue, queue_timeout, response_handler):
+    print("TO_PHONE   ", current_process().name)
+    client = Client()
+    client.username_pw_set(MQTT_USER, password=MQTT_PASS)
+    client.connect(MQTT_BROKER_HOST)
+    client.loop_start
+    client.on_connect = phone_on_connect
+
+    sem.release()
+    start_event.wait()
+    try:
+        while True:
+            request_id, response = response_queue.get(timeout=queue_timeout)
+            label = response_handler(request_id, response)
+            if response['label'][0][0] == 'falling':
+                client.publish('phone_app', 'falling'.encode())
+
+
+    except QueueEmpty:
+        print(f"No response recieved after {queue_timeout}s")
 
 ##### TODO:  MODIFY THESE IF NECESSARY ######
 def har_response_handler(request_id, response):
-    print(
-        '[RECV      activity]',
-        request_id,
-        response['label'][0][0],
-        response['raw_pred'][0][0],
-    )
+    # pass
+    label = response['label'][0][0]
+    if label.startswith('climb'):
+        label = 'climbing'
+    print('ACTIVITY', label)
+    return label
 
 ##### TODO:  MODIFY THESE IF NECESSARY ######
 def fall_response_handler(request_id, response):
-    print(
-        '[RECV falldetection]',
-        request_id,
-        response['label'][0][0],
-        response['raw_pred'][0][0],
-    )
-
+    label = response['label'][0][0]
+    if label == 'falling':
+        print('Fall Detected!')
+    return label
 
 def make_requests_loop(model, sem, start_event, window_queue, response_queue, queue_timeout):
     print(f"CLIENT({model})", current_process().name)
@@ -158,9 +202,9 @@ def make_windowed_requests(period, fall_window, fall_stride, har_window, har_str
     fall_resp_queue = Manager().Queue()
     har_resp_queue = Manager().Queue()
 
-    data_consumer_timeout = 3*period/1000
-    fall_window_consumer_timeout = 3*fall_window*period/1000
-    har_window_consumer_timeout = 3*har_window*period/1000
+    data_consumer_timeout = 6
+    fall_window_consumer_timeout = 6
+    har_window_consumer_timeout = 6
 
     processes = []
     # enable both tags
@@ -191,11 +235,11 @@ def make_windowed_requests(period, fall_window, fall_stride, har_window, har_str
             har_window_queue, har_resp_queue, har_window_consumer_timeout)))
 
     processes.append(Process(
-        target=handle_server_response_loop,
+        target=handle_server_response_loop_har,
         args=(sem, start_event, har_resp_queue, har_window_consumer_timeout, har_response_handler)))
 
     processes.append(Process(
-        target=handle_server_response_loop,
+        target=handle_server_response_loop_fall,
         args=(sem, start_event, fall_resp_queue, fall_window_consumer_timeout, fall_response_handler)))
 
     processes.append(Process(target=sync_start, args=(len(processes), start_event, sem)))
@@ -208,7 +252,7 @@ def make_windowed_requests(period, fall_window, fall_stride, har_window, har_str
 
 
 def main():
-    make_windowed_requests(TAG_PERIOD, TIME_STEPS, 10, TIME_STEPS, 10)
+    make_windowed_requests(TAG_PERIOD, 25, 5, 50, 5)
 
 if __name__ == "__main__":
     main()
