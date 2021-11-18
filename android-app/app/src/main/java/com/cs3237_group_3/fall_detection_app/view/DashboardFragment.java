@@ -35,6 +35,7 @@ public class DashboardFragment extends Fragment
     private GlobalViewModel viewModel;
     private BleManager bleManager;
     private ConfigurationData configurationData;
+    private String serverUri;
 
     private AVLoadingIndicatorView wristSensorLiv, waistSensorLiv, serverLiv, activityLiv;
     private MaterialCardView wristSensorConnCard, waistSensorConnCard,
@@ -61,7 +62,6 @@ public class DashboardFragment extends Fragment
         viewModel.initBleServices(
                 (BluetoothManager) getActivity().getSystemService(Context.BLUETOOTH_SERVICE),
                 getContext());
-        viewModel.initMqttService(getActivity().getApplicationContext());
         bleManager = viewModel.getBleManager();
         initObservers();
 
@@ -93,6 +93,8 @@ public class DashboardFragment extends Fragment
                 Log.e(TAG, "ConfigurationData is null");
                 return;
             }
+            serverUri = config.getServerIp();
+            viewModel.initMqttService(getActivity().getApplicationContext(), serverUri);
             bleManager.connectToSensorTags(config.getWristSensorMacAdd(), config.getWaistSensorMacAdd());
         };
         viewModel.getConfigurationLiveDataFromRepo().observe(getViewLifecycleOwner(),
@@ -127,15 +129,15 @@ public class DashboardFragment extends Fragment
         viewModel.getMqttConnLiveData().observe(getViewLifecycleOwner(),
                 mqttConnStatusObserver);
 
-        final Observer<String> acitivityStatusObserver = status -> {
+        final Observer<String> activityStatusObserver = status -> {
             if (status == null) {
                 Log.e(TAG, "mqttConnRes is null");
                 return;
             }
             setActivityStatus(status);
         };
-        viewModel.getMqttConnLiveData().observe(getViewLifecycleOwner(),
-                mqttConnStatusObserver);
+        viewModel.getActivityReceivedFromServer().observe(getViewLifecycleOwner(),
+                activityStatusObserver);
 
     }
 
@@ -173,7 +175,7 @@ public class DashboardFragment extends Fragment
             bleManager.refreshConnectionForWaistTag();
         } else if (v.getId() == R.id.refreshServerConnBtn) {
             showLoading(serverConnCard, serverConnTv, serverLiv);
-            viewModel.initMqttService(getActivity().getApplicationContext());
+            viewModel.initMqttService(getActivity().getApplicationContext(), serverUri);
         }
     }
 

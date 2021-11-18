@@ -42,8 +42,8 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         initTabsAndViewPager(view);
-        NavController navController = Navigation.findNavController(view);
-        navController.navigate(R.id.action_homeFragment_to_fallAlertDialog);
+//        NavController navController = Navigation.findNavController(view);
+//        navController.navigate(R.id.action_homeFragment_to_fallAlertDialog);
     }
 
     private void initTabsAndViewPager(View view) {

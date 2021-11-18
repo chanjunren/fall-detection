@@ -23,19 +23,22 @@ import static com.cs3237_group_3.fall_detection_app.util.Utilities.ACTIVITY_OUTP
 public class MqttClient {
     private final String TAG = "MqttClient";
 
-    final String serverUri = "tcp://test.mosquitto.org:1883";
+    final String serverUri = "tcp://192.168.10.127:1883";
 
     String clientId = "ExampleAndroidClient12312412r3";
 
     private final MqttAndroidClient client;
     private GlobalViewModel viewModel;
+    private Context context;
     public MqttClient(Context context, GlobalViewModel viewModel) {
         client = new MqttAndroidClient(context, serverUri, clientId);
         this.viewModel = viewModel;
+        this.context = context;
         initConnection(serverUri, context);
     }
 
-    private void initConnection(String serverUri, Context context) {
+    private void initConnection(String uri, Context context) {
+//        String serverUri = "tcp://" + uri + ":1883";
         client.setCallback(new MqttCallbackExtended() {
             @Override
             public void connectComplete(boolean reconnect, String serverURI) {
@@ -58,6 +61,7 @@ public class MqttClient {
             @Override
             public void messageArrived(String topic, MqttMessage message) throws Exception {
                 Log.i(TAG, "Incoming message: " + new String(message.getPayload()));
+                viewModel.getActivityReceivedFromServer().postValue(new String(message.getPayload()));
             }
 
             @Override
@@ -68,9 +72,10 @@ public class MqttClient {
         MqttConnectOptions mqttConnectOptions = new MqttConnectOptions();
         mqttConnectOptions.setUserName("testuser1");
         mqttConnectOptions.setPassword("pass".toCharArray());
-        mqttConnectOptions.setCleanSession(true);
+        mqttConnectOptions.setCleanSession(false);
         mqttConnectOptions.setAutomaticReconnect(true);
-        mqttConnectOptions.setCleanSession(true);
+        mqttConnectOptions.setKeepAliveInterval(1);
+//        mqttConnectOptions.setCleanSession(true);
 
         try {
             //addToHistory("Connecting to " + serverUri);
@@ -107,7 +112,7 @@ public class MqttClient {
 
     public void subscribeToTopic(){
         try {
-            client.subscribe(ACTIVITY_OUTPUT_TOPIC, 0, null, new IMqttActionListener() {
+            client.subscribe(ACTIVITY_OUTPUT_TOPIC, 0, context, new IMqttActionListener() {
                 @Override
                 public void onSuccess(IMqttToken asyncActionToken) {
                     Log.i(TAG, "Subscribed successfully!");

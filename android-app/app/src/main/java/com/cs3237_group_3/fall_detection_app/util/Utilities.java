@@ -21,5 +21,7 @@ public class Utilities {
     public static final String BATT_LEVEL_CHAR_STRING = "00002a19-0000-1000-8000-00805f9b34fb";
 
     public static final String BLE_READING_TOPIC = "ble_data";
-    public static final String ACTIVITY_OUTPUT_TOPIC = "activity_output";
+    public static final String ACTIVITY_OUTPUT_TOPIC = "test123";
+
+    public static final String FALL_DETECTION_MSG = "Fall!";
 }

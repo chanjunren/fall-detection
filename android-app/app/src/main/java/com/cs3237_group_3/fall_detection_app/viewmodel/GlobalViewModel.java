@@ -30,7 +30,7 @@ public class GlobalViewModel extends AndroidViewModel {
         activityReceivedFromServer = new MutableLiveData<>("");
     }
 
-    public void initMqttService(Context context) {
+    public void initMqttService(Context context, String serverUri) {
         mqttClient = new MqttClient(context, this);
     }
 

@@ -80,8 +80,8 @@ public class SettingsFragment extends Fragment {
 //            }
         });
         configServerAddBtn.setOnClickListener(v -> {
-            navController.navigate(R.id.action_homeFragment_to_fallAlertDialog);
-//            navController.navigate(R.id.action_homeFragment_to_editServerFragment);
+//            navController.navigate(R.id.action_homeFragment_to_fallAlertDialog);
+            navController.navigate(R.id.action_homeFragment_to_editServerFragment);
 //            if (navController.getCurrentDestination().getId() == R.id.homeFragment)
 //            {
 //                navController.navigate(R.id.action_homeFragment_to_editServerFragment);
