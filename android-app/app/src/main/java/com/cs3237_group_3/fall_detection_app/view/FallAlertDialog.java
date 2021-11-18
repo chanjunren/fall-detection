@@ -117,7 +117,7 @@ public class FallAlertDialog extends DialogFragment {
         Log.i(TAG, contactNumber);
         sendIntent.setType("text/plain");
         sendIntent.putExtra(Intent.EXTRA_TEXT, "A fall has been detected"
-                + getResources().getString(R.string.whatsapp_suffix));
+                + getActivity().getResources().getString(R.string.whatsapp_suffix));
         sendIntent.putExtra("jid", contactNumber + "@s.whatsapp.net"); //phone number without "+" prefix
         sendIntent.setPackage("com.whatsapp");
         startActivity(sendIntent);

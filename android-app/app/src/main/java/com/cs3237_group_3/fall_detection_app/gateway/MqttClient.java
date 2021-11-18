@@ -98,7 +98,7 @@ public class MqttClient {
                     subscribeToTopic();
                     publishMessage("hello");
                     viewModel.postMqttConnStatus(true);
-//                    periodicWrite();
+                    periodicWrite();
                 }
 
                 @Override
@@ -146,7 +146,7 @@ public class MqttClient {
                 // do your work
                 publishMessage("Message to keep client alive");
             }
-        }, 0, 5*1000);
+        }, 0, 1*1000);
     }
 
     public void publishMessage(String publishMessage){

@@ -20,15 +20,12 @@ import android.util.Log;
 
 import androidx.lifecycle.MutableLiveData;
 
-import java.util.List;
-import java.util.UUID;
-
-import static com.cs3237_group_3.fall_detection_app.util.Utilities.BATT_SERVICE_UUID;
+import static com.cs3237_group_3.fall_detection_app.util.Utilities.BATT_LEVEL_CHAR_UUID;
+import static com.cs3237_group_3.fall_detection_app.util.Utilities.BATT_SERVICE_UUID_STRING;
 import static com.cs3237_group_3.fall_detection_app.util.Utilities.CC2650_CCCD_UUID;
-import static com.cs3237_group_3.fall_detection_app.util.Utilities.CC2650_DATA_UUID;
-import static com.cs3237_group_3.fall_detection_app.util.Utilities.CC2650_DATA_UUID_STRING;
-import static com.cs3237_group_3.fall_detection_app.util.Utilities.CC2650_SERVICE_UUID;
-import static com.cs3237_group_3.fall_detection_app.util.Utilities.CC2650_SERV_UUID_STRING;
+import static com.cs3237_group_3.fall_detection_app.util.Utilities.CC2650_MOVEMENT_DATA_UUID_STRING;
+import static com.cs3237_group_3.fall_detection_app.util.Utilities.CC2650_MOVEMENT_CONF_UUID_STRING;
+import static com.cs3237_group_3.fall_detection_app.util.Utilities.CC2650_MOVEMENT_SERV_UUID_STRING;
 
 public class BleManager {
     private final String TAG = "BleManager";
@@ -60,7 +57,7 @@ public class BleManager {
 
     public void startBleScan(ScanCallback scanCallback) {
         ScanFilter filter = new ScanFilter.Builder().setServiceUuid(
-            ParcelUuid.fromString(CC2650_DATA_UUID_STRING)
+            ParcelUuid.fromString(CC2650_MOVEMENT_DATA_UUID_STRING)
         ).build();
 
         ScanSettings scanSettings = new ScanSettings.Builder()
@@ -211,7 +208,7 @@ public class BleManager {
             public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
                 super.onCharacteristicChanged(gatt, characteristic);
                 Log.i(TAG, "Characteristic changed proc!");
-                broadcastUpdate(null, characteristic);
+//                broadcastUpdate(null, characteristic);
 
             }
 
@@ -223,14 +220,25 @@ public class BleManager {
 //                }
 //                readCharacteristicFromUuid(gatt, CC2650_SERVICE_UUID, CC2650_DATA_UUID);
                 for (BluetoothGattService service: gatt.getServices()) {
-                    if (service.getUuid().toString().equals(CC2650_SERV_UUID_STRING)) {
+                    if (service.getUuid().toString().equals(CC2650_MOVEMENT_SERV_UUID_STRING)) {
                         Log.i(TAG, "Service UUID found!");
                         for (BluetoothGattCharacteristic c: service.getCharacteristics()) {
-                            if (c.getUuid().toString().equals(CC2650_DATA_UUID_STRING)) {
-                                Log.i(TAG, "Characteristic UUID found!");
+                            if (c.getUuid().toString().equals(CC2650_MOVEMENT_DATA_UUID_STRING)) {
+                                Log.i(TAG, "Data Characteristic UUID found!");
                                 gatt.setCharacteristicNotification(c, true);
-//                                enableNotifications(gatt, c);
+                                enableNotifications(gatt, c);
                             }
+                        }
+                    }
+                    if (service.getUuid().toString().equals(BATT_SERVICE_UUID_STRING)) {
+                        Log.i(TAG, "Battery service found!");
+                        for (BluetoothGattCharacteristic c: service.getCharacteristics()) {
+                            Log.i(TAG, "Characteristic UUID: " + c.getUuid().toString());
+                        }
+                        if (service.getCharacteristic(BATT_LEVEL_CHAR_UUID) != null) {
+                            Log.i(TAG, "Battery charactersitic uuid found");
+                            gatt.setCharacteristicNotification(service.getCharacteristic(BATT_LEVEL_CHAR_UUID), true);
+
                         }
                     }
                 }
@@ -281,15 +289,18 @@ public class BleManager {
                 broadcastUpdate(null, characteristic);
             }
 
+
+
             @Override
             public void onServicesDiscovered(BluetoothGatt gatt, int status) {
                 super.onServicesDiscovered(gatt, status);
                 for (BluetoothGattService service: gatt.getServices()) {
-                    if (service.getUuid().toString().equals(CC2650_SERV_UUID_STRING)) {
+                    if (service.getUuid().toString().equals(CC2650_MOVEMENT_SERV_UUID_STRING)) {
                         Log.i(TAG, "Service UUID found!");
                         for (BluetoothGattCharacteristic c: service.getCharacteristics()) {
-                            if (c.getUuid().toString().equals(CC2650_DATA_UUID_STRING)) {
+                            if (c.getUuid().toString().equals(CC2650_MOVEMENT_DATA_UUID_STRING)) {
                                 Log.i(TAG, "Characteristic UUID found!");
+                                gatt.setCharacteristicNotification(c, true);
                                 enableNotifications(gatt, c);
                             }
                         }
@@ -330,14 +341,6 @@ public class BleManager {
         context.sendBroadcast(intent);
     }
 
-    public void setCharacteristicNotification(BluetoothGatt bluetoothGatt,
-        BluetoothGattCharacteristic characteristic,boolean enabled) {
-        if (bluetoothGatt == null) {
-            Log.w(TAG, "BluetoothGatt not initialized");
-            return;
-        }
-        bluetoothGatt.setCharacteristicNotification(characteristic, enabled);
-    }
     /**
      * @return Returns <b>true</b> if property is supports notification
      */
@@ -362,7 +365,8 @@ public class BleManager {
                BluetoothGattDescriptor CCCUUID_DES
                        = characteristic.getDescriptor(CC2650_CCCD_UUID);
                if (CCCUUID_DES != null) {
-                   writeDescriptor(gatt, CCCUUID_DES, new byte[]{0x01});
+                   Log.i(TAG, "Writing descriptor...");
+                   writeDescriptor(gatt, CCCUUID_DES, new byte[]{0x01, 0x00});
                } else {
                    Log.e(TAG, "CCCUUID_DES is null!");
                }
