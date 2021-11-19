@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/homeFragment">
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.cs3237_group_3.fall_detection_app.view.HomeFragment"
+        android:label="HomeFragment" >
+        <action
+            android:id="@+id/action_homeFragment_to_editServerFragment"
+            app:destination="@id/editServerFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_editContactFragment"
+            app:destination="@id/editContactFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_configWaistSensorFragment"
+            app:destination="@id/configWaistSensorFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_configWristSensorFragment"
+            app:destination="@id/configWristSensorFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_fallAlertDialog"
+            app:destination="@id/fallAlertDialog" />
+    </fragment>
+    <fragment
+        android:id="@+id/editServerFragment"
+        android:name="com.cs3237_group_3.fall_detection_app.view.EditServerFragment"
+        android:label="fragment_edit_server"
+        tools:layout="@layout/fragment_edit_server" >
+        <action
+            android:id="@+id/action_editServerFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/editContactFragment"
+        android:name="com.cs3237_group_3.fall_detection_app.view.EditContactFragment"
+        android:label="fragment_edit_contact"
+        tools:layout="@layout/fragment_edit_contact" >
+        <action
+            android:id="@+id/action_editContactFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/configWaistSensorFragment"
+        android:name="com.cs3237_group_3.fall_detection_app.view.ConfigWaistSensorFragment"
+        android:label="fragment_config_sensor"
+        tools:layout="@layout/fragment_config_waist_sensor" >
+        <action
+            android:id="@+id/action_configWaistSensorFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/configWristSensorFragment"
+        android:name="com.cs3237_group_3.fall_detection_app.view.ConfigWristSensorFragment"
+        android:label="fragment_config_wrist_sensor"
+        tools:layout="@layout/fragment_config_wrist_sensor" >
+        <action
+            android:id="@+id/action_configWristSensorFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+    </fragment>
+    <dialog
+        android:id="@+id/fallAlertDialog"
+        android:name="com.cs3237_group_3.fall_detection_app.view.FallAlertDialog"
+        android:label="dialog_fall_alert"
+        tools:layout="@layout/dialog_fall_alert" >
+        <action
+            android:id="@+id/action_fallAlertDialog_to_homeFragment"
+            app:destination="@id/homeFragment" />
+    </dialog>
+    <fragment
+        android:id="@+id/dashboardFragment"
+        android:name="com.cs3237_group_3.fall_detection_app.view.DashboardFragment"
+        android:label="fragment_dashboard"
+        tools:layout="@layout/fragment_dashboard" >
+        <action
+            android:id="@+id/action_dashboardFragment_to_fallAlertDialog"
+            app:destination="@id/fallAlertDialog" />
+    </fragment>
+</navigation>

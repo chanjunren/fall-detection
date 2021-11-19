@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <devlight.io.library.ntb.NavigationTabBar
+        app:ntb_title_mode="all"
+        app:ntb_titled="true"
+        app:ntb_title_size="14sp"
+        app:ntb_badge_size="30sp"
+        app:ntb_inactive_color="#FFF"
+        app:ntb_badge_bg_color="#282C31"
+        android:id="@+id/ntb_vertical"
+        android:layout_width="50dp"
+        android:layout_height="match_parent"
+        app:ntb_preview_colors="@array/vertical_ntb"/>
+
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/vp_vertical_ntb"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"/>
+</LinearLayout>
